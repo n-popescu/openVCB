@@ -217,7 +217,7 @@ void parser::eval_expr8(int64_t &result)
             get_token();
       } else {
             if (isdigit(*token)) {
-                  int const id = tolower(*(token + 1));
+                  int id = tolower(*(token + 1));
                   if (id == 'x') {
                         char const *ptr = token + 2;
                         result    = 0;
@@ -310,16 +310,16 @@ int parser::formatError(PRINTF_FORMAT_STRING fmt, ...)
 {
       va_list ap;
       va_start(ap, fmt);
-      int const ret = ::vsnprintf(errormsg, std::size(errormsg), fmt, ap);
+      int ret = ::vsnprintf(errormsg, std::size(errormsg), fmt, ap);
       va_end(ap);
       return ret;
 }
 
 uint32_t
-evalExpr(char const *expr, SymMap &symbols, char *errp, size_t const errSize)
+evalExpr(char const *expr, SymMap &symbols, char *errp, size_t errSize)
 {
-      parser        p(symbols);
-      int64_t const res = p.eval_expr(const_cast<char *>(expr));
+      parser  p(symbols);
+      int64_t res = p.eval_expr(const_cast<char *>(expr));
 
       if (!p) {
             if (errp)

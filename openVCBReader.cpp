@@ -27,11 +27,11 @@ getInkString(Ink const ink)
 }
 
 inline uint32_t
-col2int(uint32_t const col)
+col2int(uint32_t col)
 {
-      uint const r = col & UINT32_C(0xFF0000);
-      uint const g = col & UINT32_C(0x00FF00);
-      uint const b = col & UINT32_C(0x0000FF);
+      uint r = col & UINT32_C(0xFF0000);
+      uint g = col & UINT32_C(0x00FF00);
+      uint b = col & UINT32_C(0x0000FF);
       return (r >> 16) | g | (b << 16);
 }
 
@@ -76,9 +76,9 @@ color2ink(uint32_t col)
 std::string
 split(std::string const &data, char const *t, int &start)
 {
-      size_t const tlen  = strlen(t);
-      int const    begin = start;
-      auto const   end   = data.find(t, start + 1);
+      size_t tlen  = strlen(t);
+      int    begin = start;
+      auto   end   = data.find(t, start + 1);
 
       if (end == std::string::npos) {
             ::printf("error: token [%s] not found in .vcb\n", t);
@@ -100,17 +100,17 @@ processData(std::vector<uint8_t> const &logicData,
       auto const *header =
           reinterpret_cast<int const *>(&logicData[logicData.size() - headerSize]);
 
-      int const imgDSize = header[5];
-      width              = header[3];
-      height             = header[1];
+      int imgDSize = header[5];
+      width        = header[3];
+      height       = header[1];
 
       if (imgDSize != width * height * 4) {
             fputs("Error: header width x height does not match header length\n", stderr);
             return false;
       }
 
-      uint8_t const *cc     = logicData.data();
-      size_t const   ccSize = logicData.size() - headerSize;
+      uint8_t const *cc = logicData.data();
+      size_t ccSize = logicData.size() - headerSize;
 
       imSize = ZSTD_getFrameContentSize(cc, ccSize);
 
@@ -130,13 +130,13 @@ processData(std::vector<uint8_t> const &logicData,
 
       originalImage = new uint8_t[imSize];
 
-      size_t const dSize = ZSTD_decompress(originalImage, imSize, cc, ccSize);
+      size_t dSize = ZSTD_decompress(originalImage, imSize, cc, ccSize);
 
       return dSize == ccSize;
 }
 
 bool
-Project::processLogicData(std::vector<uint8_t> const &logicData, int32_t const headerSize)
+Project::processLogicData(std::vector<uint8_t> const &logicData, int32_t headerSize)
 {
       uint64_t imSize;
       if (processData(logicData, headerSize, width, height, originalImage, imSize)) {
@@ -164,14 +164,14 @@ Project::processDecorationData(std::vector<uint8_t> const &decorationData, int *
       };
       lazy_u lazy = {.i = decoData};
 
-      auto const ret = processData(decorationData, 24, width, height, lazy.uc, imSize);
-      decoData       = lazy.i;
+      auto ret = processData(decorationData, 24, width, height, lazy.uc, imSize);
+      decoData = lazy.i;
 
       assert(decoData != nullptr);
       if (ret) {
             for (uint64_t i = 0; i < imSize / 4; i++) {
-                  int const color = decoData[i];
-                  decoData[i]     = static_cast<int>(col2int(color));
+                  int color   = decoData[i];
+                  decoData[i] = static_cast<int>(col2int(color));
             }
       }
 }
@@ -208,8 +208,8 @@ Project::readFromVCB(std::string const &filePath)
 
       {
             std::string val;
-            auto const  dat = split(godotObj, " ), PoolByteArray( ", pos);
-            auto        s   = std::stringstream(dat);
+            auto dat = split(godotObj, " ), PoolByteArray( ", pos);
+            auto s   = std::stringstream(dat);
 
             while (std::getline(s, val, ','))
                   logicData.push_back(util::xatoi(val.c_str() + 1));
@@ -218,8 +218,8 @@ Project::readFromVCB(std::string const &filePath)
       auto decorationData = new std::vector<uint8_t>[3];
       {
             std::string val;
-            auto const  dat = split(godotObj, " ), PoolByteArray( ", --pos);
-            auto        s   = std::stringstream(dat);
+            auto dat = split(godotObj, " ), PoolByteArray( ", --pos);
+            auto s   = std::stringstream(dat);
 
             while (std::getline(s, val, ','))
                   decorationData[0].push_back(
@@ -228,8 +228,8 @@ Project::readFromVCB(std::string const &filePath)
 
       {
             std::string val;
-            auto const  dat = split(godotObj, " ), PoolByteArray( ", --pos);
-            auto        s   = std::stringstream(dat);
+            auto dat = split(godotObj, " ), PoolByteArray( ", --pos);
+            auto s   = std::stringstream(dat);
 
             while (std::getline(s, val, ','))
                   decorationData[1].push_back(
@@ -238,8 +238,8 @@ Project::readFromVCB(std::string const &filePath)
 
       {
             std::string val;
-            auto const  dat = split(godotObj, " ) ]", --pos);
-            auto        s   = std::stringstream(dat);
+            auto dat = split(godotObj, " ) ]", --pos);
+            auto s   = std::stringstream(dat);
 
             while (std::getline(s, val, ','))
                   decorationData[2].push_back(
@@ -252,8 +252,8 @@ Project::readFromVCB(std::string const &filePath)
 
       {
             std::string val;
-            auto const  dat = split(godotObj, " ]", pos);
-            auto        s   = std::stringstream(dat);
+            auto dat = split(godotObj, " ]", pos);
+            auto s   = std::stringstream(dat);
 
             while (std::getline(s, val, ',')) {
                   // remove quotes

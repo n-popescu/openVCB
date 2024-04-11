@@ -369,22 +369,22 @@ inline constexpr bool always_false = false;
 # if ((defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER) ||        \
       (__has_builtin(__builtin_bswap16) && __has_builtin(__builtin_bswap32) && __has_builtin(__builtin_bswap64))) && \
     !(defined __RESHARPER__ || defined __INTELLISENSE__)
-NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return __builtin_bswap16(val); }
-NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return __builtin_bswap32(val); }
-NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return __builtin_bswap64(val); }
+NODISCARD inline uint16_t bswap_native_16(uint16_t val) { return __builtin_bswap16(val); }
+NODISCARD inline uint32_t bswap_native_32(uint32_t val) { return __builtin_bswap32(val); }
+NODISCARD inline uint64_t bswap_native_64(uint64_t val) { return __builtin_bswap64(val); }
 # elif defined _MSC_VER
-NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return _byteswap_ushort(val); }
-NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return _byteswap_ulong(val); }
-NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return _byteswap_uint64(val); }
+NODISCARD inline uint16_t bswap_native_16(uint16_t val) { return _byteswap_ushort(val); }
+NODISCARD inline uint32_t bswap_native_32(uint32_t val) { return _byteswap_ulong(val); }
+NODISCARD inline uint64_t bswap_native_64(uint64_t val) { return _byteswap_uint64(val); }
 # elif __cplusplus > 202002L
-NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return ::std::byteswap(val); }
-NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return ::std::byteswap(val); }
-NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return ::std::byteswap(val); }
+NODISCARD inline uint16_t bswap_native_16(uint16_t val) { return ::std::byteswap(val); }
+NODISCARD inline uint32_t bswap_native_32(uint32_t val) { return ::std::byteswap(val); }
+NODISCARD inline uint64_t bswap_native_64(uint64_t val) { return ::std::byteswap(val); }
 # else
 #  define NO_bswap_SUPPORT
 # endif
 
-NODISCARD constexpr uint16_t bswap_16(uint16_t const val) noexcept {
+NODISCARD constexpr uint16_t bswap_16(uint16_t val) noexcept {
 # ifndef NO_bswap_SUPPORT
       if (::std::is_constant_evaluated())
 # endif
@@ -395,7 +395,7 @@ NODISCARD constexpr uint16_t bswap_16(uint16_t const val) noexcept {
 # endif
 }
 
-NODISCARD constexpr uint32_t bswap_32(uint32_t const val) noexcept
+NODISCARD constexpr uint32_t bswap_32(uint32_t val) noexcept
 {
 # ifndef NO_bswap_SUPPORT
       if (::std::is_constant_evaluated())
@@ -410,7 +410,7 @@ NODISCARD constexpr uint32_t bswap_32(uint32_t const val) noexcept
 # endif
 }
 
-NODISCARD constexpr uint64_t bswap_64(uint64_t const val) noexcept {
+NODISCARD constexpr uint64_t bswap_64(uint64_t val) noexcept {
 # ifndef NO_bswap_SUPPORT
       if (::std::is_constant_evaluated())
 # endif
@@ -439,7 +439,7 @@ concept Swappable = ::std::is_integral_v<T> && sizeof(T) <= sizeof(intmax_t);
 
 
 template <impl::Swappable T>
-NODISCARD constexpr T bswap(T const val) noexcept
+NODISCARD constexpr T bswap(T val) noexcept
 {
       if constexpr (sizeof(T) == 1)
             return val;
@@ -456,7 +456,7 @@ NODISCARD constexpr T bswap(T const val) noexcept
 }
 
 template <impl::Swappable T>
-NODISCARD constexpr T hton(T const val) noexcept
+NODISCARD constexpr T hton(T val) noexcept
 {
       if constexpr (::std::endian::native == ::std::endian::little)
             return bswap(val);
@@ -465,7 +465,7 @@ NODISCARD constexpr T hton(T const val) noexcept
 }
 
 template <impl::Swappable T>
-NODISCARD constexpr T ntoh(T const val) noexcept
+NODISCARD constexpr T ntoh(T val) noexcept
 {
       if constexpr (::std::endian::native == ::std::endian::little)
             return bswap(val);
@@ -473,13 +473,13 @@ NODISCARD constexpr T ntoh(T const val) noexcept
             return val;
 }
 
-NODISCARD inline intmax_t xatoi(char const *const ptr, int const base = 0) noexcept(false)
+NODISCARD inline intmax_t xatoi(char const *const ptr, int base = 0) noexcept(false)
 {
       char *eptr;
       auto &errno_ref = errno;
       errno_ref       = 0;
 
-      auto const ans = ::strtoimax(ptr, &eptr, base);
+      auto ans = ::strtoimax(ptr, &eptr, base);
 
       if (ptr == eptr)
             throw ::std::invalid_argument("Invalid atoi argument");
@@ -489,13 +489,13 @@ NODISCARD inline intmax_t xatoi(char const *const ptr, int const base = 0) noexc
       return ans;
 }
 
-NODISCARD inline uintmax_t xatou(char const *const ptr, int const base = 0) noexcept(false)
+NODISCARD inline uintmax_t xatou(char const *const ptr, int base = 0) noexcept(false)
 {
       char *eptr;
       auto &errno_ref = errno;
       errno_ref       = 0;
 
-      auto const ans = ::strtoumax(ptr, &eptr, base);
+      auto ans = ::strtoumax(ptr, &eptr, base);
 
       if (ptr == eptr)
             throw ::std::invalid_argument("Invalid atou argument");

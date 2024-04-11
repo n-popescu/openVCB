@@ -156,9 +156,9 @@ struct SparseMat {
       int *rows; // CSC sparse matrix rows
 };
 
-// This represents a pixel with meta data as well as simulation ink type
-// Ths is for inks that have variants which do not affect simulation
-// i.e. Colored traces.
+// This represents a pixel with metadata as well as simulation ink type
+// Ths is for inks that have variants which do not affect the simulation:
+// i.e. colored traces.
 struct InkPixel {
       Ink     ink;
       int16_t meta;
@@ -252,7 +252,7 @@ class Project
       int16_t   *lastActiveInputs = nullptr;
       uint32_t   qSize            = 0;
       bool       states_is_native = false;
-      bool const vmemIsBytes;
+      bool       vmemIsBytes;
 
       StringArray      *error_messages  = nullptr;
       RandomBitProvider random;
@@ -320,10 +320,8 @@ class Project
       [[gnu::hot]]
       bool tryEmit(int32_t gid);
 
-      [[gnu::hot]]
       void handleWordVMemTick();
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-      [[gnu::hot]]
       void handleByteVMemTick();
 #endif
 

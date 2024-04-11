@@ -95,18 +95,18 @@ void simFunc()
  */
 
 EXPORT_API int64_t
-getLineNumber(int const addr)
+getLineNumber(int addr)
 {
-      auto const itr = proj->lineNumbers.find(addr);
+      auto itr = proj->lineNumbers.find(addr);
       if (itr != proj->lineNumbers.end())
             return itr->second;
       return 0;
 }
 
 EXPORT_API size_t
-getSymbol(char const *buf, int const size)
+getSymbol(char const *buf, int size)
 {
-      auto const itr = proj->assemblySymbols.find({buf, static_cast<size_t>(size)});
+      auto itr = proj->assemblySymbols.find({buf, static_cast<size_t>(size)});
       if (itr != proj->assemblySymbols.end())
             return itr->second;
       return 0;
@@ -138,64 +138,64 @@ getVMemAddress()
 }
 
 EXPORT_API void
-setTickRate(float const tps)
+setTickRate(float tps)
 {
       targetTPS = (double)std::max(0.0f, tps);
 }
 
 EXPORT_API void
-tick(int const tick)
+tick(int tick)
 {
       if (!proj)
             return;
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS       = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->tick(tick);
       targetTPS = tps;
 }
 
 EXPORT_API void
-toggleLatch(int const x, int const y)
+toggleLatch(int x, int y)
 {
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS       = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->toggleLatch(glm::ivec2(x, y));
       targetTPS = tps;
 }
 
 EXPORT_API void
-toggleLatchIndex(int const idx)
+toggleLatchIndex(int idx)
 {
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS       = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->toggleLatch(idx);
       targetTPS = tps;
 }
 
 EXPORT_API void
-addBreakpoint(int const gid)
+addBreakpoint(int gid)
 {
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS       = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->addBreakpoint(gid);
       targetTPS = tps;
 }
 
 EXPORT_API void
-removeBreakpoint(int const gid)
+removeBreakpoint(int gid)
 {
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS       = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->removeBreakpoint(gid);
       targetTPS = tps;
 }
@@ -203,20 +203,20 @@ removeBreakpoint(int const gid)
 EXPORT_API int
 pollBreakpoint()
 {
-      bool const res = simBreakpoint;
-      simBreakpoint  = false;
+      bool res      = simBreakpoint;
+      simBreakpoint = false;
       return res;
 }
 
 EXPORT_API void
-openVCB_SetClockPeriod(uint const high, uint const low)
+openVCB_SetClockPeriod(uint32_t high, uint32_t low)
 {
       //std::lock_guard lock(simLock);
       proj->tickClock.set_period(low, high);
 }
 
 EXPORT_API void
-openVCB_SetTimerPeriod(uint32_t const period)
+openVCB_SetTimerPeriod(uint32_t period)
 {
       //std::lock_guard lock(simLock);
       proj->realtimeClock.set_period(period);
@@ -229,7 +229,7 @@ openVCB_SetTimerPeriod(uint32_t const period)
  */
 
 EXPORT_API void
-newProject(int64_t const seed, bool const vmemIsBytes)
+newProject(int64_t seed, bool vmemIsBytes)
 {
       proj = new openVCB::Project(seed, vmemIsBytes);
 }
@@ -249,7 +249,7 @@ initProject()
 }
 
 EXPORT_API void
-initVMem(char const *assembly, int const aSize, char *err, int const errSize)
+initVMem(char const *assembly, int aSize, char *err, int errSize)
 {
       proj->assembly = std::string(assembly, aSize);
       proj->assembleVmem(err, errSize);
@@ -284,18 +284,18 @@ deleteProject()
  */
 
 EXPORT_API void
-addInstrumentBuffer(openVCB::InkState *buf, int const bufSize, int const idx)
+addInstrumentBuffer(openVCB::InkState *buf, int bufSize, int idx)
 {
       std::lock_guard lock(simLock);
 
-      double const tps = targetTPS;
-      targetTPS        = 0;
+      double tps = targetTPS;
+      targetTPS  = 0;
       proj->instrumentBuffers.emplace_back(buf, bufSize, idx);
       targetTPS = tps;
 }
 
 EXPORT_API void
-setStateMemory(int *data, int const size) noexcept(false)
+setStateMemory(int *data, int size) noexcept(false)
 {
       std::lock_guard lock(simLock);
 
@@ -310,7 +310,7 @@ setStateMemory(int *data, int const size) noexcept(false)
 }
 
 EXPORT_API void
-setVMemMemory(intptr_t data, int const size)
+setVMemMemory(intptr_t data, int size)
 {
       std::lock_guard lock(simLock);
       proj->vmem     = reinterpret_cast<int *>(data);
@@ -318,7 +318,7 @@ setVMemMemory(intptr_t data, int const size)
 }
 
 EXPORT_API void
-setIndicesMemory(int *data, int const size)
+setIndicesMemory(int *data, int size)
 {
       std::lock_guard lock(simLock);
       memcpy(data, proj->indexImage, sizeof(*proj->indexImage) * size);
@@ -341,7 +341,7 @@ setIndicesMemory(int *data, int const size)
 }
 
 EXPORT_API void
-setImageMemory(intptr_t data, int const width, int const height)
+setImageMemory(intptr_t data, int width, int height)
 {
       std::lock_guard lock(simLock);
       proj->width  = width;
@@ -360,13 +360,13 @@ setDecoMemory(int       *__restrict indices, UU int indLen,
 
       for (int32_t y = 0; y < proj->height; ++y) {
             for (int32_t x = 0; x < proj->width; ++x) {
-                  int32_t const idx = x + y * proj->width;
-                  indices[idx]      = -1;
+                  int32_t idx  = x + y * proj->width;
+                  indices[idx] = -1;
 
                   if (uint32_t(col[idx]) != UINT32_MAX)
                         continue;
 
-                  auto const ink = SetOff(proj->image[idx].ink);
+                  auto ink = SetOff(proj->image[idx].ink);
                   if (util::eq_any(ink, Ink::LatchOff, Ink::LedOff)) {
                         queue.emplace(x, y, proj->indexImage[idx]);
                         visited[idx] = true;
@@ -381,11 +381,11 @@ setDecoMemory(int       *__restrict indices, UU int indLen,
             indices[pos.x + pos.y * proj->width] = pos.z;
 
             for (auto const &neighbor : openVCB::fourNeighbors) {
-                  glm::ivec2 const np = static_cast<glm::ivec2>(pos) + neighbor;
+                  glm::ivec2 np = static_cast<glm::ivec2>(pos) + neighbor;
                   if (np.x < 0 || np.x >= proj->width || np.y < 0 || np.y >= proj->height)
                         continue;
 
-                  int const nidx = np.x + np.y * proj->width;
+                  int nidx = np.x + np.y * proj->width;
                   if (visited[nidx])
                         continue;
 

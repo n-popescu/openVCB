@@ -75,14 +75,14 @@ class Preprocessor
         std::array<std::unique_ptr<uint64_t[]>, 2> ptrs_;
 
     public:
-        explicit visited_IDs(size_t const canvas_size)
+        explicit visited_IDs(size_t canvas_size)
             : ptrs_({std::make_unique<uint64_t[]>(canvas_size),
                      std::make_unique<uint64_t[]>(canvas_size)})
         {}
 
         ND auto &normal() & { return ptrs_[0]; }
         ND auto &mesh()   & { return ptrs_[1]; }
-    }            visited;
+    } visited;
 
     /*--------------------------------------------------------------------------------*/
 
@@ -91,8 +91,9 @@ class Preprocessor
         return get_mask(pix.ink, pix.meta);
     }
 
-    ND static constexpr uint64_t get_mask(Ink const ink, unsigned const meta = 0)
+    ND static constexpr uint64_t get_mask(Ink ink, unsigned meta = 0)
     {
+        //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
         switch (ink) {
         case Ink::TraceOff:      return UINT64_C(2) << meta;
         case Ink::TunnelOff:     return UINT64_C(2) << (16 + (meta % 4));
@@ -135,8 +136,10 @@ Preprocessor::run()
 
     // Turn off any inks that start as off
 #pragma omp parallel for schedule(static, 8192)
-    for (int64_t i = 0; i < static_cast<int64_t>(canvas_size); i++) {
-        switch (p.image[i].ink) { // NOLINT(clang-diagnostic-switch-enum)
+    for (int64_t i = 0; i < static_cast<int64_t>(canvas_size); i++)
+    {
+        //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
+        switch (p.image[i].ink) {
         default:
             break;
         case Ink::Trace:     case Ink::Read:
@@ -164,7 +167,7 @@ Preprocessor::run()
     // We need to find the location of each mesh entity before proceeding.
     for (unsigned i = 0; i < canvas_size; ++i)
         if (p.image[i].ink == Ink::Mesh)
-            meshIDs.push_back(i);
+            meshIDs.push_back(static_cast<int>(i));
     if (!meshIDs.empty())
         std::ranges::sort(meshIDs);
 
@@ -228,8 +231,8 @@ Preprocessor::run()
         accu[key] += 1;
 
     // Construct adjacentcy matrix
-    p.writeMap.nnz               = static_cast<int32_t>(conList.size());
-    p.writeMap.rows              = new int[p.writeMap.nnz];
+    p.writeMap.nnz  = static_cast<int>(conList.size());
+    p.writeMap.rows = new int[p.writeMap.nnz];
     p.writeMap.ptr[p.writeMap.n] = p.writeMap.nnz;
 
     // Prefix sum
@@ -245,14 +248,14 @@ Preprocessor::run()
         if (util::eq_any(p.stateInks[second], Ink::AndOff, Ink::NandOff))
             --p.states[second].activeInputs;
 
-        auto const idx       = p.writeMap.ptr[first] + accu[first]++;
+        auto idx = p.writeMap.ptr[first] + accu[first]++;
         p.writeMap.rows[idx] = second;
     }
 
     // Sort rows
     for (int i = 0; i < p.writeMap.n; ++i) {
-        auto const start = p.writeMap.ptr[i];
-        auto const end   = p.writeMap.ptr[i + 1];
+        auto start = p.writeMap.ptr[i];
+        auto end   = p.writeMap.ptr[i + 1];
         std::sort(&p.writeMap.rows[start], &p.writeMap.rows[end]);
     }
 
@@ -263,7 +266,7 @@ Preprocessor::run()
 
     // Insert starting events into the queue
     for (int i = 0; i < p.writeMap.n; ++i) {
-        Ink const ink = p.stateInks[i];
+        Ink ink = p.stateInks[i];
         if (ink == Ink::ClockOff)
             p.tickClock.GIDs.push_back(i);
         else if (ink == Ink::TimerOff)
@@ -274,14 +277,17 @@ Preprocessor::run()
             p.states[i].activeInputs = 1;
     }
 
+#ifdef _DEBUG
     {
         FILE *dump = nullptr;
         _wfopen_s(&dump, L"indexImage1.txt", L"w");
         if (dump) {
             for (size_t i = 0; i < canvas_size; ++i) {
                 if (p.indexImage[i] >= 0) {
-                    int ink = static_cast<int>(SetOff(p.image[i].ink));
-                    char const *name = ink > 0 && ink < std::size(inkNames) ? inkNames[static_cast<size_t>(ink)].data() : "UNKNOWN";
+                    auto ink = static_cast<uint>(SetOff(p.image[i].ink));
+                    char const *name = ink > 0 && ink < std::size(inkNames)
+                                           ? inkNames[ink].data()
+                                           : "UNKNOWN";
                     fwprintf(dump, L"%-7zu : %7d, %3d, %hs\n",
                              i, p.indexImage[i], p.image[i].ink, name);
                 }
@@ -289,6 +295,7 @@ Preprocessor::run()
         }
         fclose(dump);
     }
+#endif
 }
 
 
@@ -296,15 +303,15 @@ Preprocessor::run()
 
 
 void
-Preprocessor::search(ivec const vec)
+Preprocessor::search(ivec vec)
 {
-    int const top_idx = calc_index(vec);
+    int top_idx = calc_index(vec);
     if (visited.normal()[top_idx] & 1)
         return;
 
     // Check what ink this group is of
-    InkPixel const topPix     = p.image[top_idx];
-    auto const     [ink, gid] = identify_ink(vec, topPix.ink);
+    InkPixel topPix     = p.image[top_idx];
+    auto [ink, gid] = identify_ink(vec, topPix.ink);
     if (gid == -1)
         return;
 
@@ -314,8 +321,8 @@ Preprocessor::search(ivec const vec)
 
     while (!stack.empty())
     {
-        auto const comp = stack.back();
-        auto const idx  = calc_index(comp);
+        auto comp = stack.back();
+        auto idx  = calc_index(comp);
         stack.pop_back();
 
         if (p.image[idx].ink != Ink::Mesh)
@@ -337,8 +344,8 @@ Preprocessor::search(ivec const vec)
             // Handle wire buses.
             if (ink != Ink::BusOff && newInk == Ink::BusOff) {
                 // What kind of ink are we again?
-                auto const pix  = p.image[idx];
-                auto const mask = get_mask(pix);
+                auto pix  = p.image[idx];
+                auto mask = get_mask(pix);
 
                 if (mask != 0) {
                     if (!(visited.normal()[newIdx] & 1)) {
@@ -351,13 +358,13 @@ Preprocessor::search(ivec const vec)
                     if (visited.normal()[newIdx] & mask)
                         continue;
 
-                    auto const newPix   = p.image[newIdx];
-                    auto const otherIdx = p.indexImage[newIdx];
+                    auto newPix   = p.image[newIdx];
+                    auto otherIdx = p.indexImage[newIdx];
                     // Hold my beer, we're jumping in.
                     explore_bus(stack, newComp, pix, mask, newPix);
 
                     if (visited.normal()[newIdx] & 1) {
-                        auto const shifted = static_cast<int64_t>(gid) << 32;
+                        auto shifted = static_cast<int64_t>(gid) << 32;
                         if (busConsSet.insert(shifted | gid).second)
                             busCons.emplace(gid, otherIdx);
                     }
@@ -383,20 +390,20 @@ Preprocessor::search(ivec const vec)
             }
             else if (newInk == Ink::Mesh) {
                 // Here we use the normal `visited` instance. The mesh instance is only needed for buses.
-                auto const prevComp = newComp - neighbor;
+                auto prevComp = newComp - neighbor;
                 if (!validate_vector(prevComp))
                     continue;
-                int  const prevIdx = calc_index(prevComp);
-                auto const prevPix = p.image[prevIdx];
-                auto const mask    = get_mask(prevPix);
+                int  prevIdx = calc_index(prevComp);
+                auto prevPix = p.image[prevIdx];
+                auto mask    = get_mask(prevPix);
 
                 if (visited.normal()[newIdx] & mask)
                     continue;
                 visited.normal()[newIdx] |= mask;
 
-                for (auto const mesh : meshIDs) {
-                    for (auto const n : fourNeighbors) {
-                        auto const tmpVec = get_pos_from_index(mesh) + n;
+                for (auto mesh : meshIDs) {
+                    for (auto n : fourNeighbors) {
+                        auto tmpVec = get_pos_from_index(mesh) + n;
                         if (!validate_vector(tmpVec))
                             continue;
                         if (p.image[calc_index(tmpVec)] == prevPix)
@@ -408,8 +415,8 @@ Preprocessor::search(ivec const vec)
             else if (visited.normal()[newIdx] & 1) {
                 if (ink == Ink::BusOff && newInk != Ink::BusOff && get_mask(p.image[idx]) != 0) {
                     // Try to insert new connection
-                    auto const otherIdx = p.indexImage[newIdx];
-                    auto const shifted  = static_cast<int64_t>(gid) << 32;
+                    auto otherIdx = p.indexImage[newIdx];
+                    auto shifted  = static_cast<int64_t>(gid) << 32;
                     if (busConsSet.insert(shifted | otherIdx).second)
                         busCons.emplace(otherIdx, gid);
                 }
@@ -437,10 +444,11 @@ Preprocessor::search(ivec const vec)
 }
 
 std::pair<Ink, int>
-Preprocessor::identify_ink(ivec const vec, Ink ink)
+Preprocessor::identify_ink(ivec vec, Ink ink)
 {
     int gid;
 
+    //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
     switch (ink) {
     case Ink::None:
     case Ink::Cross:
@@ -491,18 +499,18 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
                           InkPixel const     busPix)
 {
     std::vector busStack{pos};
-    int const   idx = calc_index(pos);
+    int idx = calc_index(pos);
     visited.normal()[idx] |= mask;
 
     while (!busStack.empty())
     {
-        ivec const comp = busStack.back();
+        ivec comp = busStack.back();
         busStack.pop_back();
 
         // Check four directions
         for (unsigned nindex = 0; nindex < 4; ++nindex) {
-            auto const neighbor = fourNeighbors[nindex];
-            auto       newComp  = comp + neighbor;
+            auto neighbor = fourNeighbors[nindex];
+            auto newComp  = comp + neighbor;
             if (!validate_vector(newComp))
                 continue;
 
@@ -580,12 +588,12 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
                     continue;
                 visited.mesh()[newIdx] |= mask;
 
-                for (auto const mesh : meshIDs) {
-                    for (auto const n : fourNeighbors) {
-                        auto const tmpVec = get_pos_from_index(mesh) + n;
+                for (auto mesh : meshIDs) {
+                    for (auto n : fourNeighbors) {
+                        auto tmpVec = get_pos_from_index(mesh) + n;
                         if (!validate_vector(tmpVec))
                             continue;
-                        auto const tmpPix = p.image[calc_index(tmpVec)];
+                        auto tmpPix = p.image[calc_index(tmpVec)];
                         if (tmpPix == busPix)
                             busStack.push_back(tmpVec);
                     }
@@ -605,17 +613,17 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
 }
 
 bool
-Preprocessor::handle_tunnel(unsigned const nindex,
-                            bool const     ignoreMask,
-                            int const      idx,
-                            int           &newIdx,
-                            Ink           &newInk,
-                            ivec          &newComp)
+Preprocessor::handle_tunnel(unsigned nindex,
+                            bool     ignoreMask,
+                            int      idx,
+                            int     &newIdx,
+                            Ink     &newInk,
+                            ivec    &newComp)
 {
-    ivec     const &neighbor = fourNeighbors[nindex];
-    ivec     const  origComp = newComp;
-    InkPixel const  origPix  = p.image[calc_index(origComp - neighbor)];
-    uint64_t const  origMask = get_mask(Ink::TunnelOff, nindex);
+    ivec const &neighbor = fourNeighbors[nindex];
+    ivec        origComp = newComp;
+    InkPixel    origPix  = p.image[calc_index(origComp - neighbor)];
+    uint64_t    origMask = get_mask(Ink::TunnelOff, nindex);
 
     if (!ignoreMask) {
         if (visited.normal()[idx] & origMask)
@@ -680,26 +688,26 @@ Preprocessor::handle_tunnel(unsigned const nindex,
 /*--------------------------------------------------------------------------------------*/
 
 void
-Preprocessor::handle_read_ink(ivec const vec)
+Preprocessor::handle_read_ink(ivec vec)
 {
-    int const idx    = calc_index(vec);
-    int const srcGID = p.indexImage[idx];
+    int idx    = calc_index(vec);
+    int srcGID = p.indexImage[idx];
 
     for (auto neighbor : fourNeighbors) {
-        ivec const nvec = vec + neighbor;
+        ivec nvec = vec + neighbor;
         if (!validate_vector(nvec))
             continue;
 
-        auto const newIdx = calc_index(nvec);
-        auto const ink    = p.image[newIdx].ink;
+        auto newIdx = calc_index(nvec);
+        auto ink    = p.image[newIdx].ink;
 
         // Ignore any buses or clocks
         if (util::eq_any(ink, Ink::BusOff, Ink::ClockOff, Ink::TimerOff))
             continue;
 
-        auto const dstGID = p.indexImage[newIdx];
+        auto dstGID = p.indexImage[newIdx];
         if (srcGID != dstGID && dstGID != -1) {
-            auto const shifted = static_cast<int64_t>(srcGID) << 32;
+            auto shifted = static_cast<int64_t>(srcGID) << 32;
             if (conSet.insert(shifted | dstGID).second)
                 conList.emplace_back(srcGID, dstGID);
         }
@@ -707,30 +715,30 @@ Preprocessor::handle_read_ink(ivec const vec)
 }
 
 void
-Preprocessor::handle_write_ink(ivec const vec)
+Preprocessor::handle_write_ink(ivec vec)
 {
-    int const dstGID = p.indexImage[calc_index(vec)];
+    int dstGID = p.indexImage[calc_index(vec)];
     // Check if we got any wire buses as baggage
-    auto const range = busCons.equal_range(indexDict[dstGID].gid);
+    auto [begin, end] = busCons.equal_range(indexDict[dstGID].gid);
 
     for (auto neighbor : fourNeighbors) {
-        ivec const nvec = vec + neighbor;
+        ivec nvec = vec + neighbor;
         if (!validate_vector(nvec))
             continue;
-        auto const newIdx = calc_index(nvec);
+        auto newIdx = calc_index(nvec);
 
         // Ignore any buses
         if (p.image[newIdx].ink == Ink::BusOff)
             continue;
 
-        auto const srcGID = p.indexImage[newIdx];
+        auto srcGID = p.indexImage[newIdx];
         if (srcGID != dstGID && srcGID != -1) {
-            auto const shifted = static_cast<int64_t>(srcGID) << 32;
+            auto shifted = static_cast<int64_t>(srcGID) << 32;
 
             if (conSet.insert(shifted | dstGID).second) {
                 conList.emplace_back(srcGID, dstGID);
                 // Tack on those for the bus too
-                for (auto itr = range.first; itr != range.second; ++itr) {
+                for (auto itr = begin; itr != end; ++itr) {
                     int busID = p.writeMap.ptr[itr->second];
                     if (conSet.insert(shifted | busID).second)
                         conList.emplace_back(srcGID, busID);
@@ -742,31 +750,30 @@ Preprocessor::handle_write_ink(ivec const vec)
 
 /*--------------------------------------------------------------------------------------*/
 
-bool Preprocessor::validate_vector(ivec const nvec) const
+bool Preprocessor::validate_vector(ivec nvec) const
 {
     return nvec.x >= 0 && nvec.x < p.width  &&
            nvec.y >= 0 && nvec.y < p.height;
 }
 
-int Preprocessor::calc_index(ivec const vec) const
+int Preprocessor::calc_index(ivec vec) const
 {
     return vec.x + (vec.y * p.width);
 }
 
-int Preprocessor::calc_index(int const x, int const y) const
+int Preprocessor::calc_index(int x, int y) const
 {
     return x + (y * p.width);
 }
 
-glm::ivec2 Preprocessor::get_pos_from_index(int const idx) const
+glm::ivec2 Preprocessor::get_pos_from_index(int idx) const
 {
-    auto const [quot, rem] = ::div(idx, p.width);
+    auto [quot, rem] = ::div(idx, p.width);
     return {rem, quot};
 }
 
 void
-Preprocessor::push_tunnel_exit_not_found_error(ivec const neighbor,
-                                               ivec const tunComp) const
+Preprocessor::push_tunnel_exit_not_found_error(ivec neighbor, ivec tunComp) const
 {
     char const *dir = neighbor.x == 1    ? "east"
                       : neighbor.x == -1 ? "west"
@@ -774,19 +781,18 @@ Preprocessor::push_tunnel_exit_not_found_error(ivec const neighbor,
                                          : "north";
     char *buf = p.error_messages->push_blank(128);
     // Overflow isn't possible for this size of buffer, so sprintf is fine.
-    auto const size = ::sprintf(
+    auto size = ::sprintf(
         buf, R"(Error @ (%d, %d): No exit tunnel found in a search to the %s.)",
         tunComp.x, tunComp.y, dir);
     util::logs(buf, size);
 }
 
 void
-Preprocessor::push_invalid_tunnel_entrance_error(ivec const origComp,
-                                                 ivec const tmpComp) const
+Preprocessor::push_invalid_tunnel_entrance_error(ivec origComp, ivec tmpComp) const
 {
     char *buf = p.error_messages->push_blank(128);
     // Overflow isn't possible for this size of buffer, so sprintf is fine.
-    auto const size = ::sprintf(
+    auto size = ::sprintf(
         buf, "Error @ (%d, %d) & (%d, %d): Two consecutive tunnel entrances for the same ink found.",
         origComp.x, origComp.y, tmpComp.x, tmpComp.y);
     util::logs(buf, size);

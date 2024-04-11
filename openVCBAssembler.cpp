@@ -220,7 +220,7 @@ Project::dumpVMemToText(std::string const &p) const
       FILE *file = ::fopen(p.c_str(), "w");
 
       if (!file) {
-            auto const e = std::system_error{errno, std::generic_category()};
+            auto e = std::system_error{errno, std::generic_category()};
             std::cerr << "Error opening file \"" << p
                       << "\" for VMem dumping: " << e.what() << '\n';
             return;

@@ -15,10 +15,10 @@ static constexpr uint32_t B64index[256] = {
 std::vector<uint8_t>
 b64decode(std::string const &data)
 {
-      size_t const   len    = data.length();
-      uint32_t const pad    = len > 0 && (len % 4 || data[len - 1] == '=');
-      size_t const   size   = ((len + 3) / 4 - pad) * 4;
-      auto           result = std::vector<uint8_t>(size / 4 * 3 + pad);
+      size_t   len    = data.length();
+      uint32_t pad    = len > 0 && (len % 4 || data[len - 1] == '=');
+      size_t   size   = ((len + 3) / 4 - pad) * 4;
+      auto     result = std::vector<uint8_t>(size / 4 * 3 + pad);
 
       for (size_t i = 0, j = 0; i < size; i += 4) {
             uint32_t n = B64index[static_cast<size_t>(data[i])] << 18 |
@@ -55,9 +55,8 @@ isBase64(std::string const &text)
             return false;
 
       /* It wouldn't surprise me if this were actually slower. */
-      return std::ranges::all_of(text, [len, &i](char const ch) {
-            bool const ret = ::isalnum(ch) || ch == '/' || ch == '+' ||
-                             (i >= len - 3 && ch == '=');
+      return std::ranges::all_of(text, [len, &i](char ch) {
+            bool ret = ::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=');
             ++i;
             return !ret;
       });
@@ -65,7 +64,7 @@ isBase64(std::string const &text)
 #if 0
       // valid characters only
       for (size_t i = 0; i < len; i++) {
-            char const ch = text[i];
+            char ch = text[i];
             if (!(::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=')))
                   return false;
       }
@@ -96,10 +95,10 @@ Project::readFromBlueprint(std::string clipboardData) // XXX: Does this need to 
             return false;
 
       union char2int {
-            uint8_t const * ch;
-            uint32_t const *i;
+          uint8_t const  *ch;
+          uint32_t const *i;
       };
-      char2int const dummy = {.ch = logicData.data()};
+      char2int dummy = {.ch = logicData.data()};
 
       // Check zstd magic number, and do it in a way that doesn't invoke
       // undefined behavior.

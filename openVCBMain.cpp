@@ -26,7 +26,7 @@ void logf(UU PRINTF_FORMAT_STRING format, ...)
 #endif
 }
 
-void logs(UU _In_z_ char const *msg, UU size_t const len)
+void logs(UU _In_z_ char const *msg, UU size_t len)
 {
 #ifdef _DEBUG
       if (!log)
@@ -57,7 +57,7 @@ void logs(UU _In_z_ char const *msg)
 # include <Windows.h>
 
 BOOL WINAPI
-DllMain(HINSTANCE const inst, DWORD const fdwReason, LPVOID)
+DllMain(HINSTANCE const inst, DWORD fdwReason, LPVOID)
 {
       using namespace std::literals;
 

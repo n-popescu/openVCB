@@ -31,7 +31,7 @@ ND OVCB_CONSTEXPR Logic operator& (Logic val1, Logic val2) { return static_cast<
 ND OVCB_CONSTEXPR Logic operator| (Logic val1, Logic val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
 
 template <Integral T>
-ND OVCB_CONSTEXPR bool operator==(Logic const op1, T const op2)
+ND OVCB_CONSTEXPR bool operator==(Logic op1, T op2)
 {
       return op1 == static_cast<Logic>(op2);
 }
@@ -49,7 +49,7 @@ ND OVCB_CONSTEXPR int operator+ (Ink val1, int  val2) { return static_cast<int>(
 ND OVCB_CONSTEXPR int operator- (Ink val1, int  val2) { return static_cast<int>(val1) - val2; }
 
 template <Integral T>
-ND OVCB_CONSTEXPR bool operator==(Ink const op1, T const op2)
+ND OVCB_CONSTEXPR bool operator==(Ink op1, T op2)
 {
       return op1 == static_cast<Ink>(op2);
 }
@@ -75,25 +75,25 @@ operator==(InkPixel const &first, InkPixel const &second) noexcept
  * \param state Should be 0 to turn off, 1 to turn on.
  * \return The modified value.
  */
-ND OVCB_CONSTEXPR Logic SetOn(Logic const logic, unsigned const state)
+ND OVCB_CONSTEXPR Logic SetOn(Logic logic, unsigned state)
 {
       return (logic & 0x7F) | (state << 7);
 }
 
 // Sets the ink type to be on
-ND OVCB_CONSTEXPR Logic SetOn(Logic const logic)
+ND OVCB_CONSTEXPR Logic SetOn(Logic logic)
 {
       return logic | Logic::_ink_on;
 }
 
 // Sets the ink type to be off
-ND OVCB_CONSTEXPR Logic SetOff(Logic const logic)
+ND OVCB_CONSTEXPR Logic SetOff(Logic logic)
 {
       return logic & 0x7F;
 }
 
 // Gets the ink active state
-ND OVCB_CONSTEXPR bool IsOn(Logic const logic)
+ND OVCB_CONSTEXPR bool IsOn(Logic logic)
 {
       return static_cast<bool>(logic & 0x80);
 }
@@ -107,25 +107,25 @@ ND OVCB_CONSTEXPR bool IsOn(Logic const logic)
  * \param state Should be 0 to turn off, 1 to turn on.
  * \return The modified value.
  */
-ND OVCB_CONSTEXPR Ink SetOn(Ink const ink, unsigned const state)
+ND OVCB_CONSTEXPR Ink SetOn(Ink ink, unsigned state)
 {
       return (ink & 0x7F) | (state << 7);
 }
 
 // Sets the ink type to be on.
-ND OVCB_CONSTEXPR Ink SetOn(Ink const ink)
+ND OVCB_CONSTEXPR Ink SetOn(Ink ink)
 {
       return ink | Ink::_ink_on;
 }
 
 // Sets the ink type to be off
-ND OVCB_CONSTEXPR Ink SetOff(Ink const ink)
+ND OVCB_CONSTEXPR Ink SetOff(Ink ink)
 {
       return ink & 0x7F;
 }
 
 // Gets the ink active state
-ND OVCB_CONSTEXPR bool IsOn(Ink const ink)
+ND OVCB_CONSTEXPR bool IsOn(Ink ink)
 {
       return static_cast<bool>(ink & 0x80);
 }
@@ -202,8 +202,8 @@ union VMemWrapper
       //---------------------------------------------------------------------------------
 
       // Automatically use the default member when indexing.
-      ND auto const &operator[](size_t const idx) const & noexcept { return DEF_POINTER[idx]; }
-      ND auto       &operator[](size_t const idx)       & noexcept { return DEF_POINTER[idx]; }
+      ND auto const &operator[](size_t idx) const & noexcept { return DEF_POINTER[idx]; }
+      ND auto       &operator[](size_t idx)       & noexcept { return DEF_POINTER[idx]; }
 
       // Assign pointers to the default union member.
       VMemWrapper &operator=(void *ptr) noexcept
@@ -239,7 +239,7 @@ union VMemWrapper
             return DEF_POINTER != nullptr;
       }
 
-      ND uint32_t *word_at_byte(size_t const offset) const noexcept
+      ND uint32_t *word_at_byte(size_t offset) const noexcept
       {
             return reinterpret_cast<uint32_t *>(b + offset);
       }
@@ -258,7 +258,7 @@ class StringArray final
       static constexpr size_t default_capacity = 32;
 
     public:
-      explicit StringArray(uint32_t const capacity = default_capacity)
+      explicit StringArray(uint32_t capacity = default_capacity)
           : array_(new char *[capacity]),
             capacity_(capacity)
       {}
@@ -281,7 +281,7 @@ class StringArray final
       StringArray &operator=(StringArray const &)     = delete;
       StringArray &operator=(StringArray &&) noexcept = delete;
 
-      ND char *push_blank(size_t const len)
+      ND char *push_blank(size_t len)
       {
             if (qty_ + 1 == capacity_) {
                   capacity_ += default_capacity;
@@ -296,7 +296,7 @@ class StringArray final
             return str;
       }
 
-      void push(char const *orig, size_t const len)
+      void push(char const *orig, size_t len)
       {
             char *str = push_blank(len);
             memcpy(str, orig, len + 1);
@@ -338,7 +338,7 @@ class RandomBitProvider
           : random_engine_(rnd_device_()), current_(random_engine_())
       {}
 
-      explicit RandomBitProvider(uint32_t const seed)
+      explicit RandomBitProvider(uint32_t seed)
           : random_engine_(seed), current_(random_engine_())
       {}
 
@@ -351,7 +351,7 @@ class RandomBitProvider
                   current_ = random_engine_();
             }
 
-            unsigned const ret = current_ & 1U;
+            unsigned ret = current_ & 1U;
             current_ >>= 1;
             return ret;
       }
@@ -372,7 +372,7 @@ class ClockCounter final
 {
     public:
       ClockCounter() = default;
-      explicit ClockCounter(uint16_t const low, uint16_t const high)
+      explicit ClockCounter(uint16_t low, uint16_t high)
           : current_(low), low_period_(low), high_period_(high)
       {}
 
@@ -390,7 +390,7 @@ class ClockCounter final
       ND bool is_zero() const { return counter_ == 0; }
       ND int  counter() const { return counter_; }
 
-      void set_period(unsigned const low, unsigned const high)
+      void set_period(unsigned low, unsigned high)
       {
             low_period_  = static_cast<uint16_t>(low);
             high_period_ = static_cast<uint16_t>(high);
@@ -413,7 +413,7 @@ class ClockCounter final
 class TimerCounter final
 {
     public:
-      explicit TimerCounter(uint32_t const period = 1)
+      explicit TimerCounter(uint32_t period = 1)
           : period_(period)
       {}
 
@@ -429,7 +429,7 @@ class TimerCounter final
       ND bool     is_zero() const { return counter_ == 0; }
       ND uint32_t counter() const { return counter_; }
 
-      void set_period(uint32_t const val) { period_ = val; }
+      void set_period(uint32_t val) { period_ = val; }
 
       std::vector<int32_t> GIDs;
 

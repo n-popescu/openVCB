@@ -14,11 +14,11 @@ namespace openVCB {
 
 [[gnu::hot]]
 SimulationResult
-Project::tick(int32_t const numTicks, int64_t const maxEvents)
+Project::tick(int32_t numTicks, int64_t maxEvents)
 {
-      SimulationResult res = {0, false};
-      int64_t totalEvents = 0;
-      bool bp = false;
+    SimulationResult res = {0, false};
+    int64_t totalEvents = 0;
+    bool bp = false;
 
       for (; !bp && res.numTicksProcessed < numTicks; ++res.numTicksProcessed)
       {
@@ -42,12 +42,12 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
             }
 
             if (tickClock.tick())
-                  for (auto const gid : tickClock.GIDs)
+                  for (auto gid : tickClock.GIDs)
                         if (!states[gid].visited)
                               updateQ[0][qSize++] = gid;
 
             if (!realtimeClock.GIDs.empty() && realtimeClock.tick()) [[unlikely]]
-                  for (auto const gid : realtimeClock.GIDs)
+                  for (auto gid : realtimeClock.GIDs)
                         if (!states[gid].visited)
                               updateQ[0][qSize++] = gid;
 
@@ -60,8 +60,8 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
 
                   // Copy over the current number of active inputs
                   for (uint i = 0; i < numEvents; ++i) {
-                        int   const gid = updateQ[0][i];
-                        Logic const ink = states[gid].logic;
+                        int   gid = updateQ[0][i];
+                        Logic ink = states[gid].logic;
 
                         // Reset visited flag
                         states[gid].visited = false;
@@ -74,10 +74,10 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
 
                   // Main update loop
                   for (uint i = 0; i < numEvents; ++i) {
-                        int  const gid        = updateQ[0][i];
-                        auto const curInk     = states[gid];
-                        bool const lastActive = IsOn(curInk.logic);
-                        bool const nextActive = resolve_state(res, curInk, lastActive, lastActiveInputs[i]);
+                        int  gid        = updateQ[0][i];
+                        auto curInk     = states[gid];
+                        bool lastActive = IsOn(curInk.logic);
+                        bool nextActive = resolve_state(res, curInk, lastActive, lastActiveInputs[i]);
 
                         // Short circuit if the state didnt change
                         if (lastActive == nextActive)
@@ -87,19 +87,19 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
                         states[gid].logic = SetOn(curInk.logic, nextActive);
 
                         // Loop over neighbors
-                        int     const delta = nextActive ? 1 : -1;
-                        int32_t const end   = writeMap.ptr[gid + 1];
+                        int     delta = nextActive ? 1 : -1;
+                        int32_t end   = writeMap.ptr[gid + 1];
 
                         for (int n = writeMap.ptr[gid]; n < end; ++n) {
-                              auto  const nxtId  = writeMap.rows[n];
-                              Logic const nxtInk = SetOff(states[nxtId].logic);
+                              auto  nxtId  = writeMap.rows[n];
+                              Logic nxtInk = SetOff(states[nxtId].logic);
 
                               // Ignore falling edge for latches
                               if (!nextActive && nxtInk == Logic::LatchOff)
                                     continue;
 
                               // Update actives
-                              int const lastNxtInput     = states[nxtId].activeInputs;
+                              int lastNxtInput     = states[nxtId].activeInputs;
                               states[nxtId].activeInputs = int16_t(lastNxtInput + delta);
 
                               // Inks have convenient "critical points"
@@ -122,10 +122,7 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
 
 
 [[gnu::hot]] bool
-Project::resolve_state(SimulationResult &res,
-                       InkState const    curInk,
-                       bool const        lastActive,
-                       int const         lastInputs)
+Project::resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs)
 {
       // NOLINTNEXTLINE(clang-diagnostic-switch-enum)
       switch (SetOff(curInk.logic)) {
@@ -138,7 +135,7 @@ Project::resolve_state(SimulationResult &res,
       case Logic::ClockOff:   return tickClock.is_zero()     ? !lastActive : lastActive;
       case Logic::TimerOff:   return realtimeClock.is_zero() ? !lastActive : lastActive;
       case Logic::BreakpointOff: {
-            bool const ret = lastInputs > 0;
+            bool ret = lastInputs > 0;
             if (ret)
                   res.breakpoint = true;
             return ret;
@@ -150,7 +147,7 @@ Project::resolve_state(SimulationResult &res,
 
 
 [[gnu::hot]] bool
-Project::tryEmit(int32_t const gid)
+Project::tryEmit(int32_t gid)
 {
       // Check if this event is already in queue.
       if (states[gid].visited)
@@ -161,7 +158,7 @@ Project::tryEmit(int32_t const gid)
 }
 
 
-[[gnu::hot]] void
+void
 Project::handleWordVMemTick()
 {
       // Get current address
@@ -176,8 +173,8 @@ Project::handleWordVMemTick()
 
             // Turn on those latches
             for (int k = 0; k < vmData.numBits; ++k) {
-                  auto      &state = states[vmData.gids[k]];
-                  bool const isOn  = IsOn(state.logic);
+                auto &state = states[vmData.gids[k]];
+                bool  isOn  = IsOn(state.logic);
 
                   if (((data >> k) & 1) != isOn) {
                         state.activeInputs = 1;
@@ -203,7 +200,7 @@ Project::handleWordVMemTick()
 
 
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-[[gnu::hot]] void
+void
 Project::handleByteVMemTick()
 {
       // Get current address
@@ -220,8 +217,8 @@ Project::handleByteVMemTick()
 
             // Turn on those latches
             for (int k = 0; k < vmData.numBits; ++k) {
-                  auto      &state = states[vmData.gids[k]];
-                  bool const isOn  = IsOn(state.logic);
+                  auto &state = states[vmData.gids[k]];
+                  bool  isOn  = IsOn(state.logic);
 
                   if (((data >> k) & 1) != isOn) {
                         state.activeInputs = 1;
