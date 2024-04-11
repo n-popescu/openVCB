@@ -19,23 +19,16 @@ namespace openVCB {
  * Hideous boilerplate garbage to make using `enum class` objects less infuriatingly
  * tedious and "cast-tastic". This nonsense takes up less space on the page with the
  * long lines than if properly formatted, which is a win in my book.
- *
- * Incidentally, resharper whines ever so much about things not being "const",
- * so I shut it up.
  */
-#define intc   int const
-#define uintc  uint const
-#define Logicc Logic const
-#define Inkc   Ink const
 
 template <typename T> concept Integral = std::is_integral<T>::value;
 
-ND OVCB_CONSTEXPR Logic operator>>(Logicc val,  uintc  n)    { return static_cast<Logic>(static_cast<uint>(val) >> n); }
-ND OVCB_CONSTEXPR Logic operator<<(Logicc val,  uintc  n)    { return static_cast<Logic>(static_cast<uint>(val) << n); }
-ND OVCB_CONSTEXPR Logic operator& (Logicc val1, uintc  val2) { return static_cast<Logic>(static_cast<uint>(val1) & val2); }
-ND OVCB_CONSTEXPR Logic operator| (Logicc val1, uintc  val2) { return static_cast<Logic>(static_cast<uint>(val1) | val2); }
-ND OVCB_CONSTEXPR Logic operator& (Logicc val1, Logicc val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR Logic operator| (Logicc val1, Logicc val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Logic operator>>(Logic val,  uint  n)    { return static_cast<Logic>(static_cast<uint>(val) >> n); }
+ND OVCB_CONSTEXPR Logic operator<<(Logic val,  uint  n)    { return static_cast<Logic>(static_cast<uint>(val) << n); }
+ND OVCB_CONSTEXPR Logic operator& (Logic val1, uint  val2) { return static_cast<Logic>(static_cast<uint>(val1) & val2); }
+ND OVCB_CONSTEXPR Logic operator| (Logic val1, uint  val2) { return static_cast<Logic>(static_cast<uint>(val1) | val2); }
+ND OVCB_CONSTEXPR Logic operator& (Logic val1, Logic val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Logic operator| (Logic val1, Logic val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
 
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Logic const op1, T const op2)
@@ -44,16 +37,16 @@ ND OVCB_CONSTEXPR bool operator==(Logic const op1, T const op2)
 }
 
 
-ND OVCB_CONSTEXPR Ink operator>>(Inkc val,  uintc n)    { return static_cast<Ink>(static_cast<uint>(val) >> n); }
-ND OVCB_CONSTEXPR Ink operator<<(Inkc val,  uintc n)    { return static_cast<Ink>(static_cast<uint>(val) << n); }
-ND OVCB_CONSTEXPR Ink operator& (Inkc val1, uintc val2) { return static_cast<Ink>(static_cast<uint>(val1) & val2); }
-ND OVCB_CONSTEXPR Ink operator| (Inkc val1, uintc val2) { return static_cast<Ink>(static_cast<uint>(val1) | val2); }
-ND OVCB_CONSTEXPR Ink operator& (Inkc val1, Inkc  val2) { return static_cast<Ink>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR Ink operator| (Inkc val1, Inkc  val2) { return static_cast<Ink>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR int operator+ (Inkc val1, Inkc  val2) { return static_cast<int>(val1) + static_cast<int>(val2); }
-ND OVCB_CONSTEXPR int operator+ (Inkc val1, intc  val2) { return static_cast<int>(val1) + val2; }
-ND OVCB_CONSTEXPR int operator- (Inkc val1, Inkc  val2) { return static_cast<int>(val1) - static_cast<int>(val2); }
-ND OVCB_CONSTEXPR int operator- (Inkc val1, intc  val2) { return static_cast<int>(val1) - val2; }
+ND OVCB_CONSTEXPR Ink operator>>(Ink val,  uint n)    { return static_cast<Ink>(static_cast<uint>(val) >> n); }
+ND OVCB_CONSTEXPR Ink operator<<(Ink val,  uint n)    { return static_cast<Ink>(static_cast<uint>(val) << n); }
+ND OVCB_CONSTEXPR Ink operator& (Ink val1, uint val2) { return static_cast<Ink>(static_cast<uint>(val1) & val2); }
+ND OVCB_CONSTEXPR Ink operator| (Ink val1, uint val2) { return static_cast<Ink>(static_cast<uint>(val1) | val2); }
+ND OVCB_CONSTEXPR Ink operator& (Ink val1, Ink  val2) { return static_cast<Ink>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Ink operator| (Ink val1, Ink  val2) { return static_cast<Ink>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR int operator+ (Ink val1, Ink  val2) { return static_cast<int>(val1) + static_cast<int>(val2); }
+ND OVCB_CONSTEXPR int operator- (Ink val1, Ink  val2) { return static_cast<int>(val1) - static_cast<int>(val2); }
+ND OVCB_CONSTEXPR int operator+ (Ink val1, int  val2) { return static_cast<int>(val1) + val2; }
+ND OVCB_CONSTEXPR int operator- (Ink val1, int  val2) { return static_cast<int>(val1) - val2; }
 
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Ink const op1, T const op2)
@@ -61,15 +54,10 @@ ND OVCB_CONSTEXPR bool operator==(Ink const op1, T const op2)
       return op1 == static_cast<Ink>(op2);
 }
 
-ND OVCB_CONSTEXPR Ink   operator|(Inkc val1, Logicc val2) { return static_cast<Ink>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR Ink   operator&(Inkc val1, Logicc val2) { return static_cast<Ink>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR Logic operator|(Logicc val1, Inkc val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
-ND OVCB_CONSTEXPR Logic operator&(Logicc val1, Inkc val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
-
-#undef intc
-#undef uintc
-#undef Logicc
-#undef Inkc
+ND OVCB_CONSTEXPR Ink   operator|(Ink val1, Logic val2) { return static_cast<Ink>  (static_cast<uint>(val1) | static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Ink   operator&(Ink val1, Logic val2) { return static_cast<Ink>  (static_cast<uint>(val1) & static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Logic operator|(Logic val1, Ink val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Logic operator&(Logic val1, Ink val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
 
 
 constexpr bool
@@ -87,7 +75,7 @@ operator==(InkPixel const &first, InkPixel const &second) noexcept
  * \param state Should be 0 to turn off, 1 to turn on.
  * \return The modified value.
  */
-ND OVCB_CONSTEXPR Logic SetOn(Logic const logic, uint const state)
+ND OVCB_CONSTEXPR Logic SetOn(Logic const logic, unsigned const state)
 {
       return (logic & 0x7F) | (state << 7);
 }
@@ -119,7 +107,7 @@ ND OVCB_CONSTEXPR bool IsOn(Logic const logic)
  * \param state Should be 0 to turn off, 1 to turn on.
  * \return The modified value.
  */
-ND OVCB_CONSTEXPR Ink SetOn(Ink const ink, uint const state)
+ND OVCB_CONSTEXPR Ink SetOn(Ink const ink, unsigned const state)
 {
       return (ink & 0x7F) | (state << 7);
 }
@@ -193,7 +181,7 @@ union VMemWrapper
 #else
 # define DEF_POINTER i
       using value_type = uint32_t;
-      ND auto &      def() & noexcept { return i; }
+      ND auto       &def()       & noexcept { return i; }
       ND auto const &def() const & noexcept { return i; }
 #endif
 
@@ -206,19 +194,16 @@ union VMemWrapper
       explicit VMemWrapper(uint8_t *ptr) noexcept
           : b(ptr)
       {}
+      // ReSharper disable once CppNonExplicitConvertingConstructor
       VMemWrapper(std::nullptr_t) noexcept
-          : i(nullptr)
+          : DEF_POINTER(nullptr)
       {}
 
       //---------------------------------------------------------------------------------
 
       // Automatically use the default member when indexing.
-      ND auto const &operator[](size_t const idx) const & noexcept
-      {
-            return DEF_POINTER[idx];
-      }
-
-      ND auto &operator[](size_t const idx) & noexcept { return DEF_POINTER[idx]; }
+      ND auto const &operator[](size_t const idx) const & noexcept { return DEF_POINTER[idx]; }
+      ND auto       &operator[](size_t const idx)       & noexcept { return DEF_POINTER[idx]; }
 
       // Assign pointers to the default union member.
       VMemWrapper &operator=(void *ptr) noexcept
@@ -264,7 +249,7 @@ union VMemWrapper
 
 /*--------------------------------------------------------------------------------------*/
 
-class StringArray
+class StringArray final
 {
       char   **array_;
       uint32_t capacity_;
@@ -292,8 +277,8 @@ class StringArray
       }
 
       StringArray(StringArray const &)                = delete;
-      StringArray &operator=(StringArray const &)     = delete;
       StringArray(StringArray &&) noexcept            = delete;
+      StringArray &operator=(StringArray const &)     = delete;
       StringArray &operator=(StringArray &&) noexcept = delete;
 
       ND char *push_blank(size_t const len)
@@ -331,7 +316,12 @@ class StringArray
       ND uint32_t size()     const { return qty_; }
       ND uint32_t capacity() const { return capacity_; }
 
-      ND char const *const *data() const
+      ND char const *const *const &data() const &
+      {
+            return array_;
+      }
+
+      ND char **&data() &
       {
             return array_;
       }
@@ -352,9 +342,9 @@ class RandomBitProvider
           : random_engine_(seed), current_(random_engine_())
       {}
 
-      ND NOINLINE unsigned operator()()
+      ND unsigned operator()()
       {
-            if (avail_ > 0) [[likely]] {
+            if (avail_ > 0) {
                   --avail_;
             } else {
                   avail_   = num_bits - 1U;
@@ -378,7 +368,7 @@ class RandomBitProvider
 /*--------------------------------------------------------------------------------------*/
 
 
-class ClockCounter
+class ClockCounter final
 {
     public:
       ClockCounter() = default;
@@ -400,10 +390,10 @@ class ClockCounter
       ND bool is_zero() const { return counter_ == 0; }
       ND int  counter() const { return counter_; }
 
-      void set_period(uint const high, uint const low)
+      void set_period(unsigned const low, unsigned const high)
       {
-            high_period_ = static_cast<uint16_t>(high);
             low_period_  = static_cast<uint16_t>(low);
+            high_period_ = static_cast<uint16_t>(high);
       }
 
       std::vector<int32_t> GIDs;
@@ -420,7 +410,7 @@ class ClockCounter
 };
 
 
-class TimerCounter
+class TimerCounter final
 {
     public:
       explicit TimerCounter(uint32_t const period = 1)

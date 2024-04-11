@@ -2,7 +2,7 @@
 
 #include "openVCB.h"
 
-extern "C" void openVCB_FreeErrorArray() noexcept;
+//extern "C" void openVCB_FreeErrorArray() noexcept;
 
 
 namespace openVCB {
@@ -14,7 +14,7 @@ static_assert(sizeof(InkState) == 4 && offsetof(InkState, logic) == 3);
 static_assert(sizeof(InkPixel) == 4 && offsetof(InkPixel, meta)  == 2);
 static_assert(sizeof(SparseMat) == 24);
 static_assert(sizeof(InstrumentBuffer) == 16);
-static_assert(sizeof(SimulationResult) == 16);
+static_assert(sizeof(SimulationResult) == 8);
 static_assert(sizeof(LatchInterface) == 284);
 static_assert(sizeof(VMemWrapper) == sizeof(void *));
 static_assert(sizeof(int) == 4);
@@ -63,8 +63,9 @@ Project::~Project()
       delete[] updateQ[0];
       delete[] updateQ[1];
       delete[] lastActiveInputs;
+      delete   error_messages;
 
-      ::openVCB_FreeErrorArray();
+      //::openVCB_FreeErrorArray();
 }
 
 std::pair<Ink, int>

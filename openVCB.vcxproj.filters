@@ -68,15 +68,6 @@
     <ClInclude Include="openVCB_Data.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gorder\Util.h">
-      <Filter>Header Files\Gorder</Filter>
-    </ClInclude>
-    <ClInclude Include="gorder\Graph.h">
-      <Filter>Header Files\Gorder</Filter>
-    </ClInclude>
-    <ClInclude Include="gorder\UnitHeap.h">
-      <Filter>Header Files\Gorder</Filter>
-    </ClInclude>
     <ClInclude Include="openVCB.h">
       <Filter>Header Files</Filter>
     </ClInclude>

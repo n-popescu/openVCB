@@ -12,59 +12,65 @@ template <size_t N>
 static constexpr bool
 prefix(char const *str, char const (&pre)[N])
 {
-      return strncmp(pre, str, N - 1) == 0;
+    return ::strncmp(pre, str, N - 1) == 0;
 }
 
 static std::string
 getNext(char *buf, size_t &pos)
 {
-      while (buf[pos] == ' ' || buf[pos] == '\t')
-            pos++;
-      char *ptr = strchr(buf + pos, ' ');
-      char *tab = strchr(buf + pos, '\t');
+    while (buf[pos] == ' ' || buf[pos] == '\t')
+        pos++;
+    char *ptr = strchr(buf + pos, ' ');
+    char *tab = strchr(buf + pos, '\t');
 
-      if (ptr == nullptr || (tab != nullptr && tab < ptr))
-            ptr = tab;
+    if (ptr == nullptr || (tab != nullptr && tab < ptr))
+        ptr = tab;
 
-      if (!ptr) {
-            // XXX Does this really need to be a copy?
-            auto res = std::string(buf + pos);
-            pos      = -1;
-            return res;
-      }
+    if (!ptr) {
+        // XXX Does this really need to be a copy?
+        auto res = std::string(buf + pos);
+        pos      = -1;
+        return res;
+    }
 
-      // XXX This too: wouldn't a string view work?
-      auto res = std::string(buf + pos, ptr);
-      while (*ptr == ' ' || *ptr == '\t')
-            ++ptr;
-      pos = ptr - buf;
+    // XXX This too: wouldn't a string view work?
+    auto res = std::string(buf + pos, ptr);
+    while (*ptr == ' ' || *ptr == '\t')
+        ++ptr;
+    pos = ptr - buf;
 
-      return res;
+    return res;
+}
+
+static std::string
+getNextNoRef(char *buf, size_t pos)
+{
+    return getNext(buf, pos);
 }
 
 static std::string
 getNextLine(char const *buf, uint32_t &pos, uint32_t &lineNum)
 {
-      while (buf[pos] && (isspace(buf[pos]) || buf[pos] == ';'))
-            if (buf[pos++] == '\n')
-                  ++lineNum;
-
-      uint32_t const start = pos;
-      int64_t        end   = -1;
-
-      while (buf[pos] && buf[pos] != '\n' && buf[pos] != ';') {
-            if (end < 0 && buf[pos] == '#')
-                  end = static_cast<int64_t>(pos);
-            ++pos;
-      }
-
-      if (buf[pos] == '\n')
+    while (buf[pos] && (isspace(buf[pos]) || buf[pos] == ';'))
+        if (buf[pos++] == '\n')
             ++lineNum;
-      if (end < 0)
-            end = static_cast<int64_t>(pos);
 
-      // XXX Again here, must this be a copy?
-      return {buf + start, buf + end};
+    uint32_t start = pos;
+    int64_t  end   = -1;
+
+    while (buf[pos] && buf[pos] != '\n' && buf[pos] != ';') {
+        if (end < 0 && buf[pos] == '#')
+            end = pos;
+        ++pos;
+    }
+
+    if (buf[pos] == '\n')
+        ++lineNum;
+    if (end < 0)
+        end = pos;
+
+    // XXX Again here, must this be a copy?
+    return {buf + start, buf + end};
 }
 
 
@@ -138,7 +144,7 @@ Project::assembleVmem(char *errp, size_t errSize)
             if (prefix(buf, "symbol") || prefix(buf, "resymb")) {
                   size_t      k          = 6;
                   std::string label      = getNext(buf, k);
-                  auto        val        = evalExpr(buf + k, assemblySymbols, errBuf);
+                  uint32_t    val        = evalExpr(buf + k, assemblySymbols, errBuf);
                   assemblySymbols[label] = val;
             } else if (prefix(buf, "unsymb")) {
                   size_t      k     = 6;
@@ -149,18 +155,17 @@ Project::assembleVmem(char *errp, size_t errSize)
                   std::string label = getNext(buf, k);
                   std::string addr  = getNext(buf, k);
 
-                  auto addrVal = addr == "inline"
+                  uint32_t addrVal = addr == "inline"
                                        ? loc++
                                        : evalExpr(addr.c_str(), assemblySymbols, errBuf);
-                  auto val = evalExpr(buf + k, assemblySymbols, errBuf);
+                  uint32_t val = evalExpr(buf + k, assemblySymbols, errBuf);
 
                   addrVal                = addrVal % vmemSize;
                   assemblySymbols[label] = addrVal;
                   vmem.i[addrVal]        = val;
                   lineNumbers[addrVal]   = lNum;
             } else if (prefix(buf, "unpoint")) {
-                  size_t      k     = 7;
-                  std::string label = getNext(buf, k);
+                  std::string label = getNextNoRef(buf, std::size("unpoint") - 1U);
                   assemblySymbols.erase(label);
             } else if (buf[0] == '@') {
                   /* TODO */
@@ -178,7 +183,7 @@ Project::assembleVmem(char *errp, size_t errSize)
             }
 
             if (*errBuf)
-                  snprintf(errp, errSize, "line %zu: %s", lineNum, errBuf);
+                  snprintf(errp, errSize, "line %u: %s", lineNum, errBuf);
 
             if (loc >= vmemSize) {
                   if (errp)

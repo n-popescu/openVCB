@@ -110,7 +110,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='oneAPIRelease|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 2023</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 2024</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseIntelIPP1A>true</UseIntelIPP1A>
@@ -213,6 +213,7 @@
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnabled>true</VcpkgEnabled>
     <VcpkgAutoLink>false</VcpkgAutoLink>
+    <VcpkgManifestInstall>false</VcpkgManifestInstall>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -526,7 +527,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Strict</FloatingPointModel>
       <AdditionalIncludeDirectories>$(ProjectDir);$(VcpkgRoot)\installed\$(VcpkgTriplet)\include;$(VcpkgRoot)\installed\$(VcpkgTriplet)\include\antlr4-runtime;$(ProjectDir)parse\gen\VCBasmLex;$(ProjectDir)parse\gen\VCBasmParse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OmitFramePointers>true</OmitFramePointers>
@@ -545,8 +546,8 @@
       <StringPooling>
       </StringPooling>
       <Optimization>MaxSpeedHighLevel</Optimization>
-      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus -Qunused-arguments /clang:-flto=full -Qiopenmp /clang:-march=core-avx2 /clang:-mbmi /clang:-mbmi2 /clang:-Ofast /clang:-fvectorize /clang:-fslp-vectorize /clang:-masm=intel %(AdditionalOptions)</AdditionalOptions>
-      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus -Qunused-arguments /clang:-flto=full -Qiopenmp /clang:-march=core-avx2 /clang:-mbmi /clang:-mbmi2 /clang:-fno-fast-math /fp:strict %(AdditionalOptions)</AdditionalOptions>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

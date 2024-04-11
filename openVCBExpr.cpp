@@ -7,8 +7,9 @@
 #include "openVCB_Expr.hh"
 
 
-namespace openVCB
-{
+namespace openVCB {
+
+
 using SymMap = std::map<std::string, uint32_t>;
 
 enum types : uint8_t { DELIMITER = 1, VARIABLE };
@@ -32,14 +33,14 @@ class parser {
       void get_token();
 
       template <size_t SrcSize>
-          requires(sizeof errormsg >= SrcSize)
+          requires(SrcSize <= sizeof errormsg)
       __inline constexpr void setError(char const (&src)[SrcSize])
       {
             ::memcpy(errormsg, src, SrcSize);
       }
 
-      ATTRIBUTE_PRINTF(2, 3)
-      int formatError(char const *fmt, ...);
+      ATTRIBUTE_PRINTF(2, 3) // The hidden `this` argument apparently counts.
+      int formatError(PRINTF_FORMAT_STRING fmt, ...);
 
 public:
       explicit parser(SymMap &vars);
@@ -60,8 +61,7 @@ parser::parser(SymMap &vars)
 }
 
 // Parser entry point.
-int64_t
-parser::eval_expr(char *exp)
+int64_t parser::eval_expr(char *exp)
 {
       errormsg[0] = '\0';
       int64_t result;
@@ -73,14 +73,14 @@ parser::eval_expr(char *exp)
             return 0;
       }
       eval_expr1(result);
-      if (*token)
+      if (*token) {
             // The last token must be null.
             formatError("syntax error (%c is not NUL)", *token);
+      }
       return result;
 }
 
-void
-parser::eval_expr1(int64_t &result)
+void parser::eval_expr1(int64_t &result)
 {
       int64_t temp;
       eval_expr2(result);
@@ -92,8 +92,7 @@ parser::eval_expr1(int64_t &result)
       }
 }
 
-void
-parser::eval_expr2(int64_t &result)
+void parser::eval_expr2(int64_t &result)
 {
       int64_t temp;
       eval_expr3(result);
@@ -105,8 +104,7 @@ parser::eval_expr2(int64_t &result)
       }
 }
 
-void
-parser::eval_expr3(int64_t &result)
+void parser::eval_expr3(int64_t &result)
 {
       int64_t temp;
       eval_expr4(result);
@@ -118,8 +116,7 @@ parser::eval_expr3(int64_t &result)
       }
 }
 
-void
-parser::eval_expr4(int64_t &result)
+void parser::eval_expr4(int64_t &result)
 {
       char    op;
       int64_t temp;
@@ -140,8 +137,7 @@ parser::eval_expr4(int64_t &result)
       }
 }
 
-void
-parser::eval_expr5(int64_t &result)
+void parser::eval_expr5(int64_t &result)
 {
       char    op;
       int64_t temp;
@@ -163,8 +159,7 @@ parser::eval_expr5(int64_t &result)
 }
 
 // Multiply or divide two factors.
-void
-parser::eval_expr6(int64_t &result)
+void parser::eval_expr6(int64_t &result)
 {
       char    op;
       int64_t temp;
@@ -188,8 +183,7 @@ parser::eval_expr6(int64_t &result)
       }
 }
 
-void
-parser::eval_expr7(int64_t &result)
+void parser::eval_expr7(int64_t &result)
 {
       char op = 0;
       if (tok_type == DELIMITER && (*token == '!' || *token == '~' || *token == '+' || * token == '-')) {
@@ -213,8 +207,7 @@ parser::eval_expr7(int64_t &result)
 }
 
 // Process a function, a parenthesized expression, a value or a variable
-void
-parser::eval_expr8(int64_t &result)
+void parser::eval_expr8(int64_t &result)
 {
       if (*token == '(') {
             get_token();
@@ -270,8 +263,7 @@ parser::eval_expr8(int64_t &result)
 }
 
 // Obtain the next token.
-void
-parser::get_token()
+void parser::get_token()
 {
       static constexpr char search_term_1[] = "+-/%*|&^~!><()";
       static constexpr char search_term_2[] = "+-/%*|&^~!><() \t";
@@ -314,8 +306,7 @@ parser::get_token()
       *temp = '\0';
 }
 
-int
-parser::formatError(PRINTF_FORMAT_STRING fmt, ...)
+int parser::formatError(PRINTF_FORMAT_STRING fmt, ...)
 {
       va_list ap;
       va_start(ap, fmt);
@@ -339,4 +330,6 @@ evalExpr(char const *expr, SymMap &symbols, char *errp, size_t const errSize)
 
       return static_cast<uint32_t>(res);
 }
+
+
 } // namespace openVCB

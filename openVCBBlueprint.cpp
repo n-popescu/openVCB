@@ -21,13 +21,13 @@ b64decode(std::string const &data)
       auto           result = std::vector<uint8_t>(size / 4 * 3 + pad);
 
       for (size_t i = 0, j = 0; i < size; i += 4) {
-            uint32_t n = B64index[data[i]] << 18 |
-                         B64index[data[i + 1]] << 12 |
-                         B64index[data[i + 2]] << 6 |
-                         B64index[data[i + 3]];
+            uint32_t n = B64index[static_cast<size_t>(data[i])] << 18 |
+                         B64index[static_cast<size_t>(data[i + 1])] << 12 |
+                         B64index[static_cast<size_t>(data[i + 2])] << 6 |
+                         B64index[static_cast<size_t>(data[i + 3])];
 
-            result[j++] = n >> 16;
-            result[j++] = n >> 8 & 0xFF;
+            result[j++] = (n >> 16) & 0xFF;
+            result[j++] = (n >> 8) & 0xFF;
             result[j++] = n & 0xFF;
       }
 

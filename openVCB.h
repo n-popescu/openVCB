@@ -66,10 +66,10 @@ enum class Ink : uint8_t {
       TimerOff,
       RandomOff,
       BreakpointOff,
+      Wireless0Off,
       Wireless1Off,
       Wireless2Off,
       Wireless3Off,
-      Wireless4Off,
 
       numTypes,
       _ink_on = 0x80,
@@ -99,10 +99,10 @@ enum class Ink : uint8_t {
       Timer       = TimerOff      | _ink_on,
       Random      = RandomOff     | _ink_on,
       Breakpoint  = BreakpointOff | _ink_on,
+      Wireless0   = Wireless0Off  | _ink_on,
       Wireless1   = Wireless1Off  | _ink_on,
       Wireless2   = Wireless2Off  | _ink_on,
       Wireless3   = Wireless3Off  | _ink_on,
-      Wireless4   = Wireless4Off  | _ink_on,
 };
 
 
@@ -173,7 +173,6 @@ struct InstrumentBuffer {
 };
 
 struct SimulationResult {
-      int64_t numEventsProcessed;
       int32_t numTicksProcessed;
       bool    breakpoint;
 };
@@ -302,8 +301,6 @@ class Project
       void toggleLatch(int32_t gid);
 
       // Preprocesses the image into the simulation format.
-      // NOTE: Gorder is often slower. It is here as an experiment.
-      [[__gnu__::__hot__]]
       void preprocess();
 
       // Methods to add and remove breakpoints.
@@ -311,22 +308,23 @@ class Project
       void removeBreakpoint(int32_t gid);
 
       /// Advances the simulation by n ticks
-      [[__gnu__::__hot__]]
+      [[gnu::hot]]
       SimulationResult tick(int32_t numTicks = 1, int64_t maxEvents = INT64_MAX);
 
       //---------------------------------------------------------------------------------
 
     private:
-      [[__gnu__::__hot__]]
-      ND OVCB_INLINE bool resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs);
+      [[gnu::hot]]
+      ND bool resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs);
 
-      [[__gnu__::__hot__]]
-      OVCB_CONSTEXPR bool tryEmit(int32_t gid);
+      [[gnu::hot]]
+      bool tryEmit(int32_t gid);
 
-      [[__gnu__::__hot__]]
-      OVCB_CONSTEXPR void handleWordVMemTick();
+      [[gnu::hot]]
+      void handleWordVMemTick();
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-      OVCB_CONSTEXPR void handleByteVMemTick();
+      [[gnu::hot]]
+      void handleByteVMemTick();
 #endif
 
       OVCB_INLINE bool GetRandomBit() { return static_cast<bool>(random()); }

@@ -26,7 +26,7 @@ void logf(UU PRINTF_FORMAT_STRING format, ...)
 #endif
 }
 
-void logs(UU char const *msg, UU size_t const len)
+void logs(UU _In_z_ char const *msg, UU size_t const len)
 {
 #ifdef _DEBUG
       if (!log)
@@ -36,7 +36,7 @@ void logs(UU char const *msg, UU size_t const len)
 #endif
 }
 
-void logs(UU char const *msg)
+void logs(UU _In_z_ char const *msg)
 {
 #ifdef _DEBUG
       if (!log)

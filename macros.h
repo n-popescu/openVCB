@@ -46,29 +46,29 @@
 # define _CRT_INTERNAL_NONSTDC_NAMES 1
 #endif
 
-#define OVCB_CAT2(_1, _2) _1 ## _2
+#define OVCB_CAT(_1, _2) _1 ## _2
 
-#define OVCB_PASTE_0()
-#define OVCB_PASTE_1(_1) _1
-#define OVCB_PASTE_2(_1, _2) OVCB_CAT2(_1, _2)
-#define OVCB_PASTE_3(_1, _2, _3) OVCB_PASTE_2(OVCB_PASTE_2(_1, _2), _3)
-#define OVCB_PASTE_4(_1, _2, _3, _4) OVCB_PASTE_2(OVCB_PASTE_3(_1, _2, _3), _4)
-#define OVCB_PASTE_5(_1, _2, _3, _4, _5) OVCB_PASTE_2(OVCB_PASTE_4(_1, _2, _3, _4), _5)
-#define OVCB_PASTE_6(_1, _2, _3, _4, _5, _6) OVCB_PASTE_2(OVCB_PASTE_5(_1, _2, _3, _4, _5), _6)
-#define OVCB_PASTE_7(_1, _2, _3, _4, _5, _6, _7) OVCB_PASTE_2(OVCB_PASTE_6(_1, _2, _3, _4, _5, _6), _7)
-#define OVCB_PASTE_8(_1, _2, _3, _4, _5, _6, _7, _8) OVCB_PASTE_2(OVCB_PASTE_7(_1, _2, _3, _4, _5, _6, _7), _8)
-#define OVCB_PASTE_9(_1, _2, _3, _4, _5, _6, _7, _8, _9) OVCB_PASTE_2(OVCB_PASTE_8(_1, _2, _3, _4, _5, _6, _7, _8), _9)
-#define OVCB_PASTE_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10) OVCB_PASTE_2(OVCB_PASTE_9(_1, _2, _3, _4, _5, _6, _7, _8, _9), _10)
-#define OVCB_PASTE_11(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11) OVCB_PASTE_2(OVCB_PASTE_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10), _11)
-#define OVCB_PASTE_12(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12) OVCB_PASTE_2(OVCB_PASTE_11(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11), _12)
-#define OVCB_PASTE_13(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13) OVCB_PASTE_2(OVCB_PASTE_12(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12), _13)
-#define OVCB_PASTE_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14) OVCB_PASTE_2(OVCB_PASTE_13(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13), _14)
-#define OVCB_PASTE_15(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15) OVCB_PASTE_2(OVCB_PASTE_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14), _15)
+#define OVCB00_PASTE_0()
+#define OVCB00_PASTE_1(_1) _1
+#define OVCB00_PASTE_2(_1, _2) OVCB_CAT(_1, _2)
+#define OVCB00_PASTE_3(_1, _2, _3) OVCB_PASTE_2(OVCB_PASTE_2(_1, _2), _3)
+#define OVCB00_PASTE_4(_1, _2, _3, _4) OVCB_PASTE_2(OVCB_PASTE_3(_1, _2, _3), _4)
+#define OVCB00_PASTE_5(_1, _2, _3, _4, _5) OVCB_PASTE_2(OVCB_PASTE_4(_1, _2, _3, _4), _5)
+#define OVCB00_PASTE_6(_1, _2, _3, _4, _5, _6) OVCB_PASTE_2(OVCB_PASTE_5(_1, _2, _3, _4, _5), _6)
+#define OVCB00_PASTE_7(_1, _2, _3, _4, _5, _6, _7) OVCB_PASTE_2(OVCB_PASTE_6(_1, _2, _3, _4, _5, _6), _7)
+#define OVCB00_PASTE_8(_1, _2, _3, _4, _5, _6, _7, _8) OVCB_PASTE_2(OVCB_PASTE_7(_1, _2, _3, _4, _5, _6, _7), _8)
+#define OVCB00_PASTE_9(_1, _2, _3, _4, _5, _6, _7, _8, _9) OVCB_PASTE_2(OVCB_PASTE_8(_1, _2, _3, _4, _5, _6, _7, _8), _9)
+#define OVCB00_PASTE_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10) OVCB_PASTE_2(OVCB_PASTE_9(_1, _2, _3, _4, _5, _6, _7, _8, _9), _10)
+#define OVCB00_PASTE_11(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11) OVCB_PASTE_2(OVCB_PASTE_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10), _11)
+#define OVCB00_PASTE_12(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12) OVCB_PASTE_2(OVCB_PASTE_11(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11), _12)
+#define OVCB00_PASTE_13(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13) OVCB_PASTE_2(OVCB_PASTE_12(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12), _13)
+#define OVCB00_PASTE_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14) OVCB_PASTE_2(OVCB_PASTE_13(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13), _14)
+#define OVCB00_PASTE_15(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15) OVCB_PASTE_2(OVCB_PASTE_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14), _15)
 
 #define OVCB00_NUM_ARGS_b(_0a, _0b, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, ...) _15
 #define OVCB00_NUM_ARGS_a(...) OVCB00_NUM_ARGS_b(__VA_ARGS__, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 0, 0)
 #define OVCB00_NUM_ARGS(...)   OVCB00_NUM_ARGS_a(__VA_ARGS__)
-#define OVCB00_PASTE(...)      OVCB_PASTE_2(OVCB_PASTE_, OVCB00_NUM_ARGS(__VA_ARGS__))
+#define OVCB00_PASTE(...)      OVCB00_PASTE_2(OVCB00_PASTE_, OVCB00_NUM_ARGS(__VA_ARGS__))
 
 #define OVCB_PASTE(...) OVCB00_PASTE(__VA_ARGS__)(__VA_ARGS__)
 
@@ -78,6 +78,7 @@
 # error "Your C pre-processor is broken or non-conformant. Cannot continue."
 #endif
 #undef OVCB00_PASTE_TEST_1
+#undef OVCB00_PASTE_TEST_2
 
 /*--------------------------------------------------------------------------------------*/
 
@@ -161,7 +162,9 @@
 #endif
 
 #if !defined ATTRIBUTE_PRINTF
-# if defined __clang__ || defined __INTEL_LLVM_COMPILER || !defined __GNUC__
+# if defined __RESHARPER__
+#  define ATTRIBUTE_PRINTF(...) [[gnu::format(printf, __VA_ARGS__))]]
+# elif defined __clang__ || defined __INTEL_LLVM_COMPILER || !defined __GNUC__
 #  define ATTRIBUTE_PRINTF(...) __attribute__((__format__(__printf__, __VA_ARGS__)))
 # else
 #  define ATTRIBUTE_PRINTF(...) __attribute__((__format__(__gnu_printf__, __VA_ARGS__)))

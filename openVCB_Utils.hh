@@ -179,7 +179,7 @@
 #endif
 
 #if (defined _HAS_CXX17)                                  || \
-    (defined __cplusplus      && __cplusplus >= 201703L)  || \
+    (defined __cplusplus      && __cplusplus  >= 201703L) || \
     (defined CXX_LANG_VER     && CXX_LANG_VER >= 201703L) || \
     (defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L)
 # define UNUSED            [[maybe_unused]]
@@ -187,11 +187,7 @@
 # define FALLTHROUGH       [[fallthrough]]
 # define DEPRECATED        [[deprecated]]
 # define DEPRECATED_MSG(x) [[deprecated(x)]]
-#  ifdef _MSC_VER
-#   define NORETURN        [[noreturn]]
-#  else
-#   define NORETURN        [[noreturn]]
-#  endif
+# define NORETURN          [[noreturn]]
 #elif defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER
 # define UNUSED            __attribute__((__unused__))
 # define NODISCARD         __attribute__((__warn_unused_result__))
@@ -237,19 +233,17 @@
 #endif
 
 #if !defined ATTRIBUTE_PRINTF
-# if defined __RESHARPER__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER
+# if defined __RESHARPER__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER || defined __clang__
 #  define ATTRIBUTE_PRINTF(fst, snd) [[gnu::format(printf, fst, snd)]]
-# elif defined __clang__ || !defined __GNUC__
-#  define ATTRIBUTE_PRINTF(fst, snd) [[__gnu__::__format__(printf, fst, snd)]]
 # elif defined __GNUC__
-#  define ATTRIBUTE_PRINTF(fst, snd) [[__gnu__::__format__(gnu_printf, fst, snd)]]
+#  define ATTRIBUTE_PRINTF(fst, snd) [[gnu::format(gnu_printf, fst, snd)]]
 # else
 #  define ATTRIBUTE_PRINTF(fst, snd)
 # endif
 #endif
 
 #define ATTRIBUTE_NONNULL(...) __attribute__((__nonnull__(__VA_ARGS__)))
-#define PRINTF_FORMAT_STRING   _In_z_ _Printf_format_string_ char const *const __restrict
+#define PRINTF_FORMAT_STRING _In_z_ _Printf_format_string_ char const *
 
 #ifndef __has_builtin
 #  define __has_builtin(x) 0
@@ -284,9 +278,15 @@
 # endif
 #endif
 
+#ifdef __cplusplus
+using uint  = unsigned int;
+using uchar = unsigned char;
+using schar =   signed char;
+#else
 typedef unsigned int  uint;
 typedef unsigned char uchar;
 typedef signed char   schar;
+#endif
 
 #if __WORDSIZE == 64
 # define SIZE_C(n)  UINT64_C(n)
@@ -329,8 +329,8 @@ typedef int16_t ssize_t;
       DELETE_COPY_CTORS(t);  \
       DELETE_MOVE_CTORS(t)
 
-#define DEFAULT_ALL_CTORS(t) \
-      DEFAULT_COPY_CTORS(t); \
+# define DEFAULT_ALL_CTORS(t) \
+      DEFAULT_COPY_CTORS(t);  \
       DEFAULT_MOVE_CTORS(t)
 #endif
 
@@ -344,8 +344,8 @@ namespace util {
 ATTRIBUTE_PRINTF(1, 2)
 extern void logf(PRINTF_FORMAT_STRING format, ...);
 
-extern void logs(_In_ char const *msg, size_t len) ATTRIBUTE_NONNULL(1);
-extern void logs(_In_ char const *msg) ATTRIBUTE_NONNULL(1);
+extern void logs(_In_z_ char const *msg, size_t len) ATTRIBUTE_NONNULL(1);
+extern void logs(_In_z_ char const *msg) ATTRIBUTE_NONNULL(1);
 inline void logs(std::string const &msg)     { logs(msg.data(), msg.size()); }
 inline void logs(std::string_view const msg) { logs(msg.data(), msg.size()); }
 
@@ -366,8 +366,9 @@ namespace impl {
 template <typename>
 inline constexpr bool always_false = false;
 
-# if (defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER) || \
-     (__has_builtin(__builtin_bswap16) && __has_builtin(__builtin_bswap32) && __has_builtin(__builtin_bswap64))
+# if ((defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER) ||        \
+      (__has_builtin(__builtin_bswap16) && __has_builtin(__builtin_bswap32) && __has_builtin(__builtin_bswap64))) && \
+    !(defined __RESHARPER__ || defined __INTELLISENSE__)
 NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return __builtin_bswap16(val); }
 NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return __builtin_bswap32(val); }
 NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return __builtin_bswap64(val); }
@@ -375,7 +376,7 @@ NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return __builtin
 NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return _byteswap_ushort(val); }
 NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return _byteswap_ulong(val); }
 NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return _byteswap_uint64(val); }
-# elif __cplusplus > 202002L && false
+# elif __cplusplus > 202002L
 NODISCARD inline uint16_t bswap_native_16(uint16_t const val) { return ::std::byteswap(val); }
 NODISCARD inline uint32_t bswap_native_32(uint32_t const val) { return ::std::byteswap(val); }
 NODISCARD inline uint64_t bswap_native_64(uint64_t const val) { return ::std::byteswap(val); }
@@ -399,10 +400,10 @@ NODISCARD constexpr uint32_t bswap_32(uint32_t const val) noexcept
 # ifndef NO_bswap_SUPPORT
       if (::std::is_constant_evaluated())
 # endif
-            return ((val << 030) & UINT32_C(0xFF00'0000)) |
-                   ((val << 010) & UINT32_C(0x00FF'0000)) |
-                   ((val >> 010) & UINT32_C(0x0000'FF00)) |
-                   ((val >> 030) & UINT32_C(0x0000'00FF));
+            return ((val << 24) & UINT32_C(0xFF00'0000)) |
+                   ((val <<  8) & UINT32_C(0x00FF'0000)) |
+                   ((val >>  8) & UINT32_C(0x0000'FF00)) |
+                   ((val >> 24) & UINT32_C(0x0000'00FF));
 # ifndef NO_bswap_SUPPORT
       else
             return bswap_native_32(val);
@@ -413,14 +414,14 @@ NODISCARD constexpr uint64_t bswap_64(uint64_t const val) noexcept {
 # ifndef NO_bswap_SUPPORT
       if (::std::is_constant_evaluated())
 # endif
-            return ((val << 070) & UINT64_C(0xFF00'0000'0000'0000)) |
-                   ((val << 050) & UINT64_C(0x00FF'0000'0000'0000)) |
-                   ((val << 030) & UINT64_C(0x0000'FF00'0000'0000)) |
-                   ((val << 010) & UINT64_C(0x0000'00FF'0000'0000)) |
-                   ((val >> 010) & UINT64_C(0x0000'0000'FF00'0000)) |
-                   ((val >> 030) & UINT64_C(0x0000'0000'00FF'0000)) |
-                   ((val >> 050) & UINT64_C(0x0000'0000'0000'FF00)) |
-                   ((val >> 070) & UINT64_C(0x0000'0000'0000'00FF));
+            return ((val << 56) & UINT64_C(0xFF00'0000'0000'0000)) |
+                   ((val << 40) & UINT64_C(0x00FF'0000'0000'0000)) |
+                   ((val << 24) & UINT64_C(0x0000'FF00'0000'0000)) |
+                   ((val <<  8) & UINT64_C(0x0000'00FF'0000'0000)) |
+                   ((val >>  8) & UINT64_C(0x0000'0000'FF00'0000)) |
+                   ((val >> 24) & UINT64_C(0x0000'0000'00FF'0000)) |
+                   ((val >> 40) & UINT64_C(0x0000'0000'0000'FF00)) |
+                   ((val >> 56) & UINT64_C(0x0000'0000'0000'00FF));
 # ifndef NO_bswap_SUPPORT
       else
             return bswap_native_64(val);
@@ -428,7 +429,7 @@ NODISCARD constexpr uint64_t bswap_64(uint64_t const val) noexcept {
 }
 
 template <typename T>
-concept Swappable = ::std::is_integral_v<T> && sizeof(T) <= 8;
+concept Swappable = ::std::is_integral_v<T> && sizeof(T) <= sizeof(intmax_t);
 
 #ifdef NO_bswap_SUPPORT
 # undef NO_bswap_SUPPORT
@@ -449,9 +450,9 @@ NODISCARD constexpr T bswap(T const val) noexcept
       else if constexpr (sizeof(T) == 8)
             return static_cast<T>(impl::bswap_64(static_cast<uint64_t>(val)));
 
-      /* This isn't reachable but it shuts up dumber linters. */
+      /* This isn't reachable, but it shuts up dumber linters. */
       static_assert(impl::always_false<T>, "Invalid integer size");
-      return -1;
+      return static_cast<T>(-1);
 }
 
 template <impl::Swappable T>

@@ -12,18 +12,20 @@ namespace openVCB {
 /*======================================================================================*/
 
 
-[[__gnu__::__hot__]]
+[[gnu::hot]]
 SimulationResult
 Project::tick(int32_t const numTicks, int64_t const maxEvents)
 {
-      SimulationResult res{};
+      SimulationResult res = {0, false};
+      int64_t totalEvents = 0;
+      bool bp = false;
 
-      for (; res.numTicksProcessed < numTicks; ++res.numTicksProcessed)
+      for (; !bp && res.numTicksProcessed < numTicks; ++res.numTicksProcessed)
       {
-            if (res.numEventsProcessed > maxEvents)
+            if (totalEvents > maxEvents)
                   return res;
 
-            for (auto const &[buffer, bufferSize, idx] : instrumentBuffers)
+            for (auto &[buffer, bufferSize, idx] : instrumentBuffers)
                   buffer[tickNum % bufferSize] = states[idx];
             ++tickNum;
       
@@ -52,9 +54,9 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
             for (int traceUpdate = 0; traceUpdate < 2; ++traceUpdate) {
                   // We update twice per tick
                   // Remember stuff
-                  uint const numEvents = qSize;
-                  qSize                = 0;
-                  res.numEventsProcessed += numEvents;
+                  uint numEvents = qSize;
+                  qSize          = 0;
+                  totalEvents += numEvents;
 
                   // Copy over the current number of active inputs
                   for (uint i = 0; i < numEvents; ++i) {
@@ -108,7 +110,8 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
                   }
 
                   if (res.breakpoint) // Stop early
-                        return res;
+                      bp = true;
+
                   // Swap buffer
                   std::swap(updateQ[0], updateQ[1]);
             }
@@ -118,7 +121,7 @@ Project::tick(int32_t const numTicks, int64_t const maxEvents)
 }
 
 
-[[__gnu__::__hot__]] OVCB_INLINE bool
+[[gnu::hot]] bool
 Project::resolve_state(SimulationResult &res,
                        InkState const    curInk,
                        bool const        lastActive,
@@ -146,8 +149,7 @@ Project::resolve_state(SimulationResult &res,
 }
 
 
-[[__gnu__::__hot__]]
-OVCB_CONSTEXPR bool
+[[gnu::hot]] bool
 Project::tryEmit(int32_t const gid)
 {
       // Check if this event is already in queue.
@@ -159,8 +161,7 @@ Project::tryEmit(int32_t const gid)
 }
 
 
-[[__gnu__::__hot__]]
-OVCB_CONSTEXPR void
+[[gnu::hot]] void
 Project::handleWordVMemTick()
 {
       // Get current address
@@ -170,10 +171,8 @@ Project::handleWordVMemTick()
 
       if (addr != lastVMemAddr) {
             // Load address
-            uint32_t data = 0;
             lastVMemAddr  = addr;
-
-            data = vmem.i[addr];
+            uint32_t data = vmem.i[addr];
 
             // Turn on those latches
             for (int k = 0; k < vmData.numBits; ++k) {
@@ -204,7 +203,7 @@ Project::handleWordVMemTick()
 
 
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-OVCB_CONSTEXPR void
+[[gnu::hot]] void
 Project::handleByteVMemTick()
 {
       // Get current address

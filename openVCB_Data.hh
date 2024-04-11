@@ -115,10 +115,10 @@ constexpr std::string_view inkNames[56] = {
       "Timer (Off)",
       "Random (Off)",
       "Break (Off)",
+      "RX0 (Off)",
       "RX1 (Off)",
       "RX2 (Off)",
       "RX3 (Off)",
-      "RX4 (Off)",
 
       "UNDEFINED",
       "Trace (On)",
@@ -150,10 +150,10 @@ constexpr std::string_view inkNames[56] = {
       "Timer (On)",
       "Random (On)",
       "Break (On)",
+      "RX0 (On)",
       "RX1 (On)",
       "RX2 (On)",
       "RX3 (On)",
-      "RX4 (On)",
 };
 
 constexpr uint32_t traceColors[16] = {
