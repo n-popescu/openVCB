@@ -1,8 +1,9 @@
-// Code for image proprocessing and graph generation
+/*
+ * Code for image proprocessing and graph generation
+ */
 
 // ReSharper disable CppTooWideScopeInitStatement
 #include "openVCB.h"
-#include <tbb/spin_mutex.h>
 
 namespace openVCB {
 /*======================================================================================*/
@@ -74,14 +75,14 @@ class Preprocessor
     class visited_IDs {
         std::array<std::unique_ptr<uint64_t[]>, 2> ptrs_;
 
-    public:
+      public:
         explicit visited_IDs(size_t canvas_size)
             : ptrs_({std::make_unique<uint64_t[]>(canvas_size),
                      std::make_unique<uint64_t[]>(canvas_size)})
         {}
 
-        ND auto &normal() & { return ptrs_[0]; }
-        ND auto &mesh()   & { return ptrs_[1]; }
+        ND auto &std()  & { return ptrs_[0]; }
+        ND auto &mesh() & { return ptrs_[1]; }
     } visited;
 
     /*--------------------------------------------------------------------------------*/
@@ -138,10 +139,13 @@ Preprocessor::run()
 #pragma omp parallel for schedule(static, 8192)
     for (int64_t i = 0; i < static_cast<int64_t>(canvas_size); i++)
     {
+        auto &ink = p.image[i].ink;
+#if 0
+        if (ink != Ink::Latch && IsOn(ink))
+            ink = SetOff(ink);
+#else
         //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
-        switch (p.image[i].ink) {
-        default:
-            break;
+        switch (ink) {
         case Ink::Trace:     case Ink::Read:
         case Ink::Write:     case Ink::Buffer:
         case Ink::Or:        case Ink::And:
@@ -154,8 +158,12 @@ Preprocessor::run()
         case Ink::Wireless0: case Ink::Wireless1:
         case Ink::Wireless2: case Ink::Wireless3:
         case Ink::InvalidMesh:
-            p.image[i].ink = SetOff(p.image[i].ink);
+            ink = SetOff(ink);
+            break;
+        default:
+            break;
         }
+#endif
     }
  
     // Split up the ordering by ink vs. comp.
@@ -306,18 +314,18 @@ void
 Preprocessor::search(ivec vec)
 {
     int top_idx = calc_index(vec);
-    if (visited.normal()[top_idx] & 1)
+    if (visited.std()[top_idx] & 1)
         return;
 
     // Check what ink this group is of
-    InkPixel topPix     = p.image[top_idx];
+    InkPixel topPix = p.image[top_idx];
     auto [ink, gid] = identify_ink(vec, topPix.ink);
     if (gid == -1)
         return;
 
     // DFS
     std::vector stack{vec};
-    visited.normal()[top_idx] |= 1;
+    visited.std()[top_idx] |= 1;
 
     while (!stack.empty())
     {
@@ -348,14 +356,14 @@ Preprocessor::search(ivec vec)
                 auto mask = get_mask(pix);
 
                 if (mask != 0) {
-                    if (!(visited.normal()[newIdx] & 1)) {
+                    if (!(visited.std()[newIdx] & 1)) {
                         // BUG What the heck is this doing?
                         std::vector<ivec> backup;
                         std::swap(stack, backup);
                         search(newComp);
                         stack = std::move(backup);
                     }
-                    if (visited.normal()[newIdx] & mask)
+                    if (visited.std()[newIdx] & mask)
                         continue;
 
                     auto newPix   = p.image[newIdx];
@@ -363,7 +371,7 @@ Preprocessor::search(ivec vec)
                     // Hold my beer, we're jumping in.
                     explore_bus(stack, newComp, pix, mask, newPix);
 
-                    if (visited.normal()[newIdx] & 1) {
+                    if (visited.std()[newIdx] & 1) {
                         auto shifted = static_cast<int64_t>(gid) << 32;
                         if (busConsSet.insert(shifted | gid).second)
                             busCons.emplace(gid, otherIdx);
@@ -378,7 +386,7 @@ Preprocessor::search(ivec vec)
                 if (!validate_vector(newComp))
                     continue;
                 newIdx = calc_index(newComp);
-                if (visited.normal()[newIdx] & 1)
+                if (visited.std()[newIdx] & 1)
                     continue;
                 newInk = p.image[newIdx].ink;
                 if (newInk == Ink::TunnelOff)
@@ -397,9 +405,9 @@ Preprocessor::search(ivec vec)
                 auto prevPix = p.image[prevIdx];
                 auto mask    = get_mask(prevPix);
 
-                if (visited.normal()[newIdx] & mask)
+                if (visited.std()[newIdx] & mask)
                     continue;
-                visited.normal()[newIdx] |= mask;
+                visited.std()[newIdx] |= mask;
 
                 for (auto mesh : meshIDs) {
                     for (auto n : fourNeighbors) {
@@ -412,7 +420,7 @@ Preprocessor::search(ivec vec)
                 }
                 continue;
             }
-            else if (visited.normal()[newIdx] & 1) {
+            else if (visited.std()[newIdx] & 1) {
                 if (ink == Ink::BusOff && newInk != Ink::BusOff && get_mask(p.image[idx]) != 0) {
                     // Try to insert new connection
                     auto otherIdx = p.indexImage[newIdx];
@@ -426,14 +434,14 @@ Preprocessor::search(ivec vec)
             // Push back if Allowable
             if (newInk == Ink::ReadOff && ink == Ink::TraceOff) {
                 readInks.push_back(newComp);
-                visited.normal()[newIdx] |= 1;
+                visited.std()[newIdx] |= 1;
                 stack.push_back(newComp);
             } else if (newInk == Ink::WriteOff && ink == Ink::TraceOff) {
                 writeInks.push_back(newComp);
-                visited.normal()[newIdx] |= 1;
+                visited.std()[newIdx] |= 1;
                 stack.push_back(newComp);
             } else if (newInk == ink) {
-                visited.normal()[newIdx] |= 1;
+                visited.std()[newIdx] |= 1;
                 stack.push_back(newComp);
             }
         }
@@ -493,14 +501,14 @@ Preprocessor::identify_ink(ivec vec, Ink ink)
 
 void
 Preprocessor::explore_bus(std::vector<ivec> &stack,
-                          ivec const         pos,
+                          ivec     const     pos,
                           InkPixel const     pix,
                           uint64_t const     mask,
                           InkPixel const     busPix)
 {
     std::vector busStack{pos};
     int idx = calc_index(pos);
-    visited.normal()[idx] |= mask;
+    visited.std()[idx] |= mask;
 
     while (!busStack.empty())
     {
@@ -515,7 +523,7 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
                 continue;
 
             int   newIdx = calc_index(newComp);
-            auto *newVis = &visited.normal()[newIdx];
+            auto *newVis = &visited.std()[newIdx];
             auto  newPix = p.image[newIdx];
 
             // Let's not waste time.
@@ -568,7 +576,7 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
                 if (!validate_vector(newComp))
                     continue;
                 newIdx = calc_index(newComp);
-                newVis = &visited.normal()[newIdx];
+                newVis = &visited.std()[newIdx];
                 if (*newVis & mask)
                     continue;
                 newPix = p.image[newIdx];
@@ -581,7 +589,7 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
                 *newVis |= mask;
                 if (!handle_tunnel(nindex, true, idx, newIdx, newPix.ink, newComp))
                     continue;
-                newVis = &visited.normal()[newIdx];
+                newVis = &visited.std()[newIdx];
             }
             else if (newPix.ink == Ink::Mesh) {
                 if (visited.mesh()[newIdx] & mask)
@@ -620,15 +628,15 @@ Preprocessor::handle_tunnel(unsigned nindex,
                             Ink     &newInk,
                             ivec    &newComp)
 {
-    ivec const &neighbor = fourNeighbors[nindex];
-    ivec        origComp = newComp;
-    InkPixel    origPix  = p.image[calc_index(origComp - neighbor)];
-    uint64_t    origMask = get_mask(Ink::TunnelOff, nindex);
+    ivec     neighbor = fourNeighbors[nindex];
+    ivec     origComp = newComp;
+    InkPixel origPix  = p.image[calc_index(origComp - neighbor)];
+    uint64_t origMask = get_mask(Ink::TunnelOff, nindex);
 
     if (!ignoreMask) {
-        if (visited.normal()[idx] & origMask)
+        if (visited.std()[idx] & origMask)
             return false;
-        visited.normal()[idx] |= origMask;
+        visited.std()[idx] |= origMask;
     }
 
     for (ivec tunComp = newComp + neighbor; ; tunComp += neighbor)
@@ -641,7 +649,7 @@ Preprocessor::handle_tunnel(unsigned nindex,
         int tunIdx = calc_index(tunComp);
         if (p.image[tunIdx].ink != Ink::TunnelOff)
             continue;
-        uint64_t &tunVis = visited.normal()[tunIdx];
+        uint64_t &tunVis = visited.std()[tunIdx];
 
     retry:
         tunComp += neighbor;
@@ -665,7 +673,7 @@ Preprocessor::handle_tunnel(unsigned nindex,
                 if (tunVis & mask)
                     return false;
                 tunVis |= mask;
-                visited.normal()[tunIdx] |= mask;
+                visited.std()[tunIdx] |= mask;
             }
             newComp = tunComp;
             newInk  = tunPix.ink;
@@ -780,9 +788,8 @@ Preprocessor::push_tunnel_exit_not_found_error(ivec neighbor, ivec tunComp) cons
                       : neighbor.y == 1  ? "south"
                                          : "north";
     char *buf = p.error_messages->push_blank(128);
-    // Overflow isn't possible for this size of buffer, so sprintf is fine.
-    auto size = ::sprintf(
-        buf, R"(Error @ (%d, %d): No exit tunnel found in a search to the %s.)",
+    auto size = ::snprintf(
+        buf, 128, R"(Error @ (%d, %d): No exit tunnel found in a search to the %s.)",
         tunComp.x, tunComp.y, dir);
     util::logs(buf, size);
 }
@@ -791,9 +798,8 @@ void
 Preprocessor::push_invalid_tunnel_entrance_error(ivec origComp, ivec tmpComp) const
 {
     char *buf = p.error_messages->push_blank(128);
-    // Overflow isn't possible for this size of buffer, so sprintf is fine.
-    auto size = ::sprintf(
-        buf, "Error @ (%d, %d) & (%d, %d): Two consecutive tunnel entrances for the same ink found.",
+    auto size = ::snprintf(
+        buf, 128, "Error @ (%d, %d) & (%d, %d): Two consecutive tunnel entrances for the same ink found.",
         origComp.x, origComp.y, tmpComp.x, tmpComp.y);
     util::logs(buf, size);
 }
