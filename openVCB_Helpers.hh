@@ -29,6 +29,7 @@ ND OVCB_CONSTEXPR Logic operator& (Logic val1, uint  val2) { return static_cast<
 ND OVCB_CONSTEXPR Logic operator| (Logic val1, uint  val2) { return static_cast<Logic>(static_cast<uint>(val1) | val2); }
 ND OVCB_CONSTEXPR Logic operator& (Logic val1, Logic val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
 ND OVCB_CONSTEXPR Logic operator| (Logic val1, Logic val2) { return static_cast<Logic>(static_cast<uint>(val1) | static_cast<uint>(val2)); }
+ND OVCB_CONSTEXPR Logic operator~ (Logic val)              { return static_cast<Logic>(~static_cast<uint>(val)); }
 
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Logic op1, T op2)
@@ -47,6 +48,7 @@ ND OVCB_CONSTEXPR int operator+ (Ink val1, Ink  val2) { return static_cast<int>(
 ND OVCB_CONSTEXPR int operator- (Ink val1, Ink  val2) { return static_cast<int>(val1) - static_cast<int>(val2); }
 ND OVCB_CONSTEXPR int operator+ (Ink val1, int  val2) { return static_cast<int>(val1) + val2; }
 ND OVCB_CONSTEXPR int operator- (Ink val1, int  val2) { return static_cast<int>(val1) - val2; }
+ND OVCB_CONSTEXPR Ink operator~ (Ink val)             { return static_cast<Ink>(~static_cast<uint>(val)); }
 
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Ink op1, T op2)
@@ -83,7 +85,7 @@ ND OVCB_CONSTEXPR Logic SetOn(Logic logic, unsigned state)
 // Sets the ink type to be on
 ND OVCB_CONSTEXPR Logic SetOn(Logic logic)
 {
-      return logic | Logic::_ink_on;
+      return logic | 0x80U;
 }
 
 // Sets the ink type to be off
@@ -115,19 +117,19 @@ ND OVCB_CONSTEXPR Ink SetOn(Ink ink, unsigned state)
 // Sets the ink type to be on.
 ND OVCB_CONSTEXPR Ink SetOn(Ink ink)
 {
-      return ink | Ink::_ink_on;
+      return ink | 0x80U;
 }
 
 // Sets the ink type to be off
 ND OVCB_CONSTEXPR Ink SetOff(Ink ink)
 {
-      return ink & 0x7F;
+      return ink & 0x7FU;
 }
 
 // Gets the ink active state
 ND OVCB_CONSTEXPR bool IsOn(Ink ink)
 {
-      return static_cast<bool>(ink & 0x80);
+      return static_cast<bool>(ink & 0x80U);
 }
 
 
@@ -144,15 +146,17 @@ inline Logic inkLogicType(Ink ink)
       case Ink::ClockOff:  return Logic::ClockOff;
       case Ink::RandomOff: return Logic::RandomOff;
       case Ink::TimerOff:  return Logic::TimerOff;
+      case Ink::BreakpointOff: return Logic::BreakpointOff;
 
       case Ink::NotOff:
       case Ink::NorOff:
       case Ink::AndOff:
             return Logic::ZeroOff;
 
-      case Ink::BreakpointOff:
-            return Logic::BreakpointOff;
-
+      case Ink::NandOff:
+      case Ink::OrOff:
+      case Ink::BufferOff:
+      case Ink::TraceOff:
       default:
             return Logic::NonZeroOff;
       }
@@ -204,13 +208,6 @@ union VMemWrapper
       // Automatically use the default member when indexing.
       ND auto const &operator[](size_t idx) const & noexcept { return DEF_POINTER[idx]; }
       ND auto       &operator[](size_t idx)       & noexcept { return DEF_POINTER[idx]; }
-
-      // Assign pointers to the default union member.
-      VMemWrapper &operator=(void *ptr) noexcept
-      {
-            DEF_POINTER = static_cast<value_type *>(ptr);
-            return *this;
-      }
 
       // Assign pointers to the default union member.
       VMemWrapper &operator=(value_type *ptr) noexcept
@@ -335,11 +332,12 @@ class RandomBitProvider
 
     public:
       RandomBitProvider()
-          : random_engine_(rnd_device_()), current_(random_engine_())
+          : RandomBitProvider(rnd_device_())
       {}
 
       explicit RandomBitProvider(uint32_t seed)
-          : random_engine_(seed), current_(random_engine_())
+          : random_engine_(seed),
+            current_(random_engine_())
       {}
 
       ND unsigned operator()()
@@ -357,7 +355,7 @@ class RandomBitProvider
       }
 
     private:
-      static constexpr int num_bits = 32U;
+      static constexpr int num_bits = sizeof(uint32_t) * CHAR_BIT;
       inline static std::random_device rnd_device_{};
 
       random_type random_engine_;

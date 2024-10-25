@@ -57,7 +57,7 @@ void logs(UU _In_z_ char const *msg)
 # include <Windows.h>
 
 BOOL WINAPI
-DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
+DllMain(HINSTANCE inst, DWORD fdwReason, LPVOID)
 {
       using namespace std::literals;
 

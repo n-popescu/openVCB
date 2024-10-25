@@ -20,8 +20,7 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
     int64_t totalEvents = 0;
     bool bp = false;
 
-    for (; !bp && res.numTicksProcessed < numTicks && totalEvents > maxEvents;
-         ++res.numTicksProcessed)
+    for (; !bp && res.numTicksProcessed < numTicks && totalEvents <= maxEvents; ++res.numTicksProcessed)
     {
         for (auto const &[buffer, bufferSize, idx] : instrumentBuffers)
             buffer[tickNum % bufferSize] = states[idx];
@@ -43,11 +42,10 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
             for (auto gid : tickClock.GIDs)
                 if (!states[gid].visited)
                     updateQ[0][qSize++] = gid;
-
         if (!realtimeClock.GIDs.empty() && realtimeClock.tick()) [[unlikely]]
-        for (auto gid : realtimeClock.GIDs)
-            if (!states[gid].visited)
-                updateQ[0][qSize++] = gid;
+            for (auto gid : realtimeClock.GIDs)
+                if (!states[gid].visited)
+                    updateQ[0][qSize++] = gid;
 
         for (int traceUpdate = 0; traceUpdate < 2; ++traceUpdate) {
             // We update twice per tick

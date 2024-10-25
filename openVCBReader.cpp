@@ -10,7 +10,7 @@
 
 namespace openVCB
 {
-static constexpr int num_types       = static_cast<unsigned>(Ink::numTypes);
+static constexpr int num_types       = static_cast<unsigned>(Ink::_numTypes);
 static constexpr int num_enumerators = num_types * 2;
 
 

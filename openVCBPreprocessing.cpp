@@ -81,8 +81,8 @@ class Preprocessor
                      std::make_unique<uint64_t[]>(canvas_size)})
         {}
 
-        ND auto &std()  & { return ptrs_[0]; }
-        ND auto &mesh() & { return ptrs_[1]; }
+        ND auto &std()  { return ptrs_[0]; }
+        ND auto &mesh() { return ptrs_[1]; }
     } visited;
 
     /*--------------------------------------------------------------------------------*/
@@ -203,7 +203,8 @@ Preprocessor::run()
     p.states_is_native = true;
     p.states           = new InkState[p.writeMap.n];
     p.stateInks        = new Ink[p.writeMap.n];
-    p.states[0]        = {0, false, Logic::None};
+    if (p.writeMap.n > 0)
+        p.states[0] = {0, false, Logic::None};
 
     // Borrow writeMap for a reverse mapping
     p.writeMap.ptr = new int[p.writeMap.n + 1];
