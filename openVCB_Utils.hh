@@ -10,7 +10,6 @@
 #ifdef _MSC_VER
 # define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
 # define _CRT_SECURE_NO_WARNINGS 1
-# define _USE_DECLSPECS_FOR_SAL  1
 #endif
 
 #if defined _WIN32 || defined _WIN64
@@ -48,8 +47,8 @@
 
 //#define GLM_FORCE_MESSAGES 1
 //#define GLM_FORCE_INLINE 1
-#define GLM_HAS_IF_CONSTEXPR 1
-#define GLM_HAS_CONSTEXPR 1
+//#define GLM_HAS_IF_CONSTEXPR 1
+//#define GLM_HAS_CONSTEXPR 1
 #define GLM_FORCE_XYZW_ONLY 1
 //#define GLM_FORCE_AVX2 1
 //#define GLM_FORCE_INTRINSICS 1
@@ -352,13 +351,13 @@ inline void logs(std::string_view const msg) { logs(msg.data(), msg.size()); }
 template <typename T1>
 constexpr bool eq_any(T1 const &left, T1 const &right)
 {
-      return left == right;
+    return left == right;
 }
 
 template <typename T1, typename ...Types>
 constexpr bool eq_any(T1 const &left, T1 const &right, Types const &...rest)
 {
-      return left == right || eq_any(left, rest...);
+    return left == right || eq_any(left, rest...);
 }
 
 namespace impl {
@@ -384,47 +383,48 @@ NODISCARD inline uint64_t bswap_native_64(uint64_t val) { return ::std::byteswap
 #  define NO_bswap_SUPPORT
 # endif
 
-NODISCARD constexpr uint16_t bswap_16(uint16_t val) noexcept {
+NODISCARD constexpr uint16_t bswap_16(uint16_t val) noexcept
+{
 # ifndef NO_bswap_SUPPORT
-      if (::std::is_constant_evaluated())
+    if (::std::is_constant_evaluated())
 # endif
-            return static_cast<uint16_t>((val << 8) | (val >> 8));
+        return static_cast<uint16_t>((val << 8) | (val >> 8));
 # ifndef NO_bswap_SUPPORT
-      else
-            return bswap_native_16(val);
+    else
+        return bswap_native_16(val);
 # endif
 }
 
 NODISCARD constexpr uint32_t bswap_32(uint32_t val) noexcept
 {
 # ifndef NO_bswap_SUPPORT
-      if (::std::is_constant_evaluated())
+    if (::std::is_constant_evaluated())
 # endif
-            return ((val << 24) & UINT32_C(0xFF00'0000)) |
-                   ((val <<  8) & UINT32_C(0x00FF'0000)) |
-                   ((val >>  8) & UINT32_C(0x0000'FF00)) |
-                   ((val >> 24) & UINT32_C(0x0000'00FF));
+        return ((val << 24) & UINT32_C(0xFF00'0000)) |
+               ((val <<  8) & UINT32_C(0x00FF'0000)) |
+               ((val >>  8) & UINT32_C(0x0000'FF00)) |
+               ((val >> 24) & UINT32_C(0x0000'00FF));
 # ifndef NO_bswap_SUPPORT
-      else
-            return bswap_native_32(val);
+    else
+        return bswap_native_32(val);
 # endif
 }
 
 NODISCARD constexpr uint64_t bswap_64(uint64_t val) noexcept {
 # ifndef NO_bswap_SUPPORT
-      if (::std::is_constant_evaluated())
-# endif
-            return ((val << 56) & UINT64_C(0xFF00'0000'0000'0000)) |
-                   ((val << 40) & UINT64_C(0x00FF'0000'0000'0000)) |
-                   ((val << 24) & UINT64_C(0x0000'FF00'0000'0000)) |
-                   ((val <<  8) & UINT64_C(0x0000'00FF'0000'0000)) |
-                   ((val >>  8) & UINT64_C(0x0000'0000'FF00'0000)) |
-                   ((val >> 24) & UINT64_C(0x0000'0000'00FF'0000)) |
-                   ((val >> 40) & UINT64_C(0x0000'0000'0000'FF00)) |
-                   ((val >> 56) & UINT64_C(0x0000'0000'0000'00FF));
+    if (::std::is_constant_evaluated())
+# endif 
+        return ((val << 56) & UINT64_C(0xFF00'0000'0000'0000)) |
+               ((val << 40) & UINT64_C(0x00FF'0000'0000'0000)) |
+               ((val << 24) & UINT64_C(0x0000'FF00'0000'0000)) |
+               ((val <<  8) & UINT64_C(0x0000'00FF'0000'0000)) |
+               ((val >>  8) & UINT64_C(0x0000'0000'FF00'0000)) |
+               ((val >> 24) & UINT64_C(0x0000'0000'00FF'0000)) |
+               ((val >> 40) & UINT64_C(0x0000'0000'0000'FF00)) |
+               ((val >> 56) & UINT64_C(0x0000'0000'0000'00FF));
 # ifndef NO_bswap_SUPPORT
-      else
-            return bswap_native_64(val);
+    else
+        return bswap_native_64(val);
 # endif
 }
 
@@ -441,68 +441,51 @@ concept Swappable = ::std::is_integral_v<T> && sizeof(T) <= sizeof(intmax_t);
 template <impl::Swappable T>
 NODISCARD constexpr T bswap(T val) noexcept
 {
-      if constexpr (sizeof(T) == 1)
-            return val;
-      else if constexpr (sizeof(T) == 2)
-            return static_cast<T>(impl::bswap_16(static_cast<uint16_t>(val)));
-      else if constexpr (sizeof(T) == 4)
-            return static_cast<T>(impl::bswap_32(static_cast<uint32_t>(val)));
-      else if constexpr (sizeof(T) == 8)
-            return static_cast<T>(impl::bswap_64(static_cast<uint64_t>(val)));
-
-      /* This isn't reachable, but it shuts up dumber linters. */
-      static_assert(impl::always_false<T>, "Invalid integer size");
-      return static_cast<T>(-1);
+    if constexpr (sizeof(T) == 1)
+        return val;
+    else if constexpr (sizeof(T) == 2)
+        return static_cast<T>(impl::bswap_16(static_cast<uint16_t>(val)));
+    else if constexpr (sizeof(T) == 4)
+        return static_cast<T>(impl::bswap_32(static_cast<uint32_t>(val)));
+    else if constexpr (sizeof(T) == 8)
+        return static_cast<T>(impl::bswap_64(static_cast<uint64_t>(val)));
+    else
+        static_assert(impl::always_false<T>, "Invalid integer size");
+    /* This isn't reachable, but it shuts up dumber linters. */
+    return static_cast<T>(-1);
 }
 
-template <impl::Swappable T>
-NODISCARD constexpr T hton(T val) noexcept
+NODISCARD inline intmax_t
+xatoi(char const *const ptr, int base = 0) noexcept(false)
 {
-      if constexpr (::std::endian::native == ::std::endian::little)
-            return bswap(val);
-      else
-            return val;
-}
+    char *eptr;
+    auto &errno_ref = errno;
+    errno_ref       = 0;
 
-template <impl::Swappable T>
-NODISCARD constexpr T ntoh(T val) noexcept
-{
-      if constexpr (::std::endian::native == ::std::endian::little)
-            return bswap(val);
-      else
-            return val;
-}
+    auto ans = ::strtoimax(ptr, &eptr, base);
 
-NODISCARD inline intmax_t xatoi(char const *const ptr, int base = 0) noexcept(false)
-{
-      char *eptr;
-      auto &errno_ref = errno;
-      errno_ref       = 0;
+    if (ptr == eptr)
+        throw ::std::invalid_argument("Invalid atoi argument");
+    if (errno_ref == ERANGE)
+        throw ::std::range_error("atoi argument out of range");
 
-      auto ans = ::strtoimax(ptr, &eptr, base);
-
-      if (ptr == eptr)
-            throw ::std::invalid_argument("Invalid atoi argument");
-      if (errno_ref == ERANGE)
-            throw ::std::range_error("atoi argument out of range");
-
-      return ans;
+    return ans;
 }
 
 NODISCARD inline uintmax_t xatou(char const *const ptr, int base = 0) noexcept(false)
 {
-      char *eptr;
-      auto &errno_ref = errno;
-      errno_ref       = 0;
+    char *eptr;
+    auto &errno_ref = errno;
+    errno_ref       = 0;
 
-      auto ans = ::strtoumax(ptr, &eptr, base);
+    auto ans = ::strtoumax(ptr, &eptr, base);
 
-      if (ptr == eptr)
-            throw ::std::invalid_argument("Invalid atou argument");
-      if (errno_ref == ERANGE)
-            throw ::std::range_error("atou argument out of range");
+    if (ptr == eptr)
+        throw ::std::invalid_argument("Invalid atou argument");
+    if (errno_ref == ERANGE)
+        throw ::std::range_error("atou argument out of range");
 
-      return ans;
+    return ans;
 }
 
 

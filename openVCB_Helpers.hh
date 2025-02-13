@@ -5,9 +5,9 @@
 #include "openVCB.h"
 
 #if defined _MSC_VER
-#  if !(defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER)
-#    pragma warning(disable: 5030)  // Unrecognized attribute
-#  endif
+# if !(defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER)
+#   pragma warning(disable: 5030)  // Unrecognized attribute
+#endif
 #endif
 
 
@@ -34,7 +34,7 @@ ND OVCB_CONSTEXPR Logic operator~ (Logic val)              { return static_cast<
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Logic op1, T op2)
 {
-      return op1 == static_cast<Logic>(op2);
+    return op1 == static_cast<Logic>(op2);
 }
 
 
@@ -53,7 +53,7 @@ ND OVCB_CONSTEXPR Ink operator~ (Ink val)             { return static_cast<Ink>(
 template <Integral T>
 ND OVCB_CONSTEXPR bool operator==(Ink op1, T op2)
 {
-      return op1 == static_cast<Ink>(op2);
+    return op1 == static_cast<Ink>(op2);
 }
 
 ND OVCB_CONSTEXPR Ink   operator|(Ink val1, Logic val2) { return static_cast<Ink>  (static_cast<uint>(val1) | static_cast<uint>(val2)); }
@@ -65,7 +65,7 @@ ND OVCB_CONSTEXPR Logic operator&(Logic val1, Ink val2) { return static_cast<Log
 constexpr bool
 operator==(InkPixel const &first, InkPixel const &second) noexcept
 {
-      return first.ink == second.ink && first.meta == second.meta;
+    return first.ink == second.ink && first.meta == second.meta;
 }
 
 /*--------------------------------------------------------------------------------------*/
@@ -79,25 +79,25 @@ operator==(InkPixel const &first, InkPixel const &second) noexcept
  */
 ND OVCB_CONSTEXPR Logic SetOn(Logic logic, unsigned state)
 {
-      return (logic & 0x7F) | (state << 7);
+    return (logic & 0x7F) | (state << 7);
 }
 
 // Sets the ink type to be on
 ND OVCB_CONSTEXPR Logic SetOn(Logic logic)
 {
-      return logic | 0x80U;
+    return logic | 0x80U;
 }
 
 // Sets the ink type to be off
 ND OVCB_CONSTEXPR Logic SetOff(Logic logic)
 {
-      return logic & 0x7F;
+    return logic & 0x7F;
 }
 
 // Gets the ink active state
 ND OVCB_CONSTEXPR bool IsOn(Logic logic)
 {
-      return static_cast<bool>(logic & 0x80);
+    return static_cast<bool>(logic & 0x80);
 }
 
 /*--------------------------------------------------------------------------------------*/
@@ -111,55 +111,59 @@ ND OVCB_CONSTEXPR bool IsOn(Logic logic)
  */
 ND OVCB_CONSTEXPR Ink SetOn(Ink ink, unsigned state)
 {
-      return (ink & 0x7F) | (state << 7);
+    return (ink & 0x7F) | (state << 7);
 }
 
 // Sets the ink type to be on.
 ND OVCB_CONSTEXPR Ink SetOn(Ink ink)
 {
-      return ink | 0x80U;
+    return ink | 0x80U;
 }
 
 // Sets the ink type to be off
 ND OVCB_CONSTEXPR Ink SetOff(Ink ink)
 {
-      return ink & 0x7FU;
+    return ink & 0x7FU;
 }
 
 // Gets the ink active state
 ND OVCB_CONSTEXPR bool IsOn(Ink ink)
 {
-      return static_cast<bool>(ink & 0x80U);
+    return static_cast<bool>(ink & 0x80U);
 }
 
 
 // Gets the logic type of said ink
 // Define the logics of each ink here.
-inline Logic inkLogicType(Ink ink)
+inline Logic
+inkLogicType(Ink ink)
 {
-      ink = SetOff(ink);
+    ink = SetOff(ink);
 
-      switch (ink) {  // NOLINT(clang-diagnostic-switch-enum)
-      case Ink::XorOff:    return Logic::XorOff;
-      case Ink::XnorOff:   return Logic::XnorOff;
-      case Ink::LatchOff:  return Logic::LatchOff;
-      case Ink::ClockOff:  return Logic::ClockOff;
-      case Ink::RandomOff: return Logic::RandomOff;
-      case Ink::TimerOff:  return Logic::TimerOff;
-      case Ink::BreakpointOff: return Logic::BreakpointOff;
+    switch (ink) { // NOLINT(clang-diagnostic-switch-enum)
+    case Ink::LatchOff:      return Logic::LatchOff;
+    case Ink::ClockOff:      return Logic::ClockOff;
+    case Ink::RandomOff:     return Logic::RandomOff;
+    case Ink::TimerOff:      return Logic::TimerOff;
+    case Ink::BreakpointOff: return Logic::BreakpointOff;
 
-      case Ink::NotOff:
-      case Ink::NorOff:
-      case Ink::AndOff:
-            return Logic::ZeroOff;
+    case Ink::XorOff:
+        return Logic::XorOff;
+    case Ink::XnorOff:
+        return Logic::XnorOff;
 
-      case Ink::NandOff:
-      case Ink::OrOff:
-      case Ink::BufferOff:
-      case Ink::TraceOff:
-      default:
-            return Logic::NonZeroOff;
-      }
+    case Ink::NotOff:
+    case Ink::NorOff:
+    case Ink::AndOff:
+        return Logic::ZeroOff;
+
+    case Ink::NandOff:
+    case Ink::OrOff:
+    case Ink::BufferOff:
+    case Ink::TraceOff:
+    default:
+        return Logic::NonZeroOff;
+    }
 }
 
 // Gets the string name of the ink
@@ -174,72 +178,72 @@ extern char const *getInkString(Ink ink);
  */
 union VMemWrapper
 {
-      uint32_t *i;
-      uint8_t  *b;
+    uint32_t *i;
+    uint8_t  *b;
 
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-      using value_type = uint8_t;
-      ND auto       &def()       & noexcept { return b; }
-      ND auto const &def() const & noexcept { return b; }
+    using value_type = uint8_t;
+    ND auto       &def()       & noexcept { return b; }
+    ND auto const &def() const & noexcept { return b; }
 # define DEF_POINTER b
 #else
 # define DEF_POINTER i
-      using value_type = uint32_t;
-      ND auto       &def()       & noexcept { return i; }
-      ND auto const &def() const & noexcept { return i; }
+    using value_type = uint32_t;
+    ND auto       &def()       & noexcept { return i; }
+    ND auto const &def() const & noexcept { return i; }
 #endif
 
-      //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
 
-      VMemWrapper() noexcept = default;
-      explicit VMemWrapper(uint32_t *ptr) noexcept
-          : i(ptr)
-      {}
-      explicit VMemWrapper(uint8_t *ptr) noexcept
-          : b(ptr)
-      {}
-      // ReSharper disable once CppNonExplicitConvertingConstructor
-      VMemWrapper(std::nullptr_t) noexcept
-          : DEF_POINTER(nullptr)
-      {}
+    VMemWrapper() noexcept = default;
+    explicit VMemWrapper(uint32_t *ptr) noexcept
+        : i(ptr)
+    {}
+    explicit VMemWrapper(uint8_t *ptr) noexcept
+        : b(ptr)
+    {}
+    // ReSharper disable once CppNonExplicitConvertingConstructor
+    VMemWrapper(std::nullptr_t) noexcept
+        : DEF_POINTER(nullptr)
+    {}
 
-      //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
 
-      // Automatically use the default member when indexing.
-      ND auto const &operator[](size_t idx) const & noexcept { return DEF_POINTER[idx]; }
-      ND auto       &operator[](size_t idx)       & noexcept { return DEF_POINTER[idx]; }
+    // Automatically use the default member when indexing.
+    ND auto const &operator[](size_t idx) const & noexcept { return DEF_POINTER[idx]; }
+    ND auto       &operator[](size_t idx)       & noexcept { return DEF_POINTER[idx]; }
 
-      // Assign pointers to the default union member.
-      VMemWrapper &operator=(value_type *ptr) noexcept
-      {
-            DEF_POINTER = ptr;
-            return *this;
-      }
+    // Assign pointers to the default union member.
+    VMemWrapper &operator=(value_type *ptr) noexcept
+    {
+        DEF_POINTER = ptr;
+        return *this;
+    }
 
-      // Allow assigning nullptr directly.
-      VMemWrapper &operator=(std::nullptr_t) noexcept
-      {
-            DEF_POINTER = nullptr;
-            return *this;
-      }
+    // Allow assigning nullptr directly.
+    VMemWrapper &operator=(std::nullptr_t) noexcept
+    {
+        DEF_POINTER = nullptr;
+        return *this;
+    }
 
-      // Allow comparing with nullptr directly.
-      ND bool constexpr operator==(std::nullptr_t) const noexcept
-      {
-            return DEF_POINTER == nullptr;
-      }
+    // Allow comparing with nullptr directly.
+    ND bool constexpr operator==(std::nullptr_t) const noexcept
+    {
+        return DEF_POINTER == nullptr;
+    }
 
-      // Allow checking whether the pointer null by placing it in a boolean
-      // context just as if this were a bare pointer.
-      ND explicit constexpr operator bool() const noexcept
-      {
-            return DEF_POINTER != nullptr;
-      }
+    // Allow checking whether the pointer null by placing it in a boolean
+    // context just as if this were a bare pointer.
+    ND explicit constexpr operator bool() const noexcept
+    {
+        return DEF_POINTER != nullptr;
+    }
 
-      ND uint32_t *word_at_byte(size_t offset) const noexcept
-      {
-            return reinterpret_cast<uint32_t *>(b + offset);
-      }
+    ND uint32_t *word_at_byte(size_t offset) const noexcept
+    {
+        return reinterpret_cast<uint32_t *>(b + offset);
+    }
 };
 
 #undef DEF_POINTER
@@ -248,119 +252,119 @@ union VMemWrapper
 
 class StringArray final
 {
-      char   **array_;
-      uint32_t capacity_;
-      uint32_t qty_ = 0;
+    char   **array_;
+    uint32_t capacity_;
+    uint32_t qty_ = 0;
 
-      static constexpr size_t default_capacity = 32;
+    static constexpr size_t default_capacity = 32;
 
-    public:
-      explicit StringArray(uint32_t capacity = default_capacity)
-          : array_(new char *[capacity]),
-            capacity_(capacity)
-      {}
+  public:
+    explicit StringArray(uint32_t capacity = default_capacity)
+        : array_(new char *[capacity]),
+          capacity_(capacity)
+    {}
 
-      ~StringArray()
-      {
-            if (array_) {
-                  for (unsigned i = 0; i < qty_; ++i) {
-                        delete[] array_[i];
-                        array_[i] = nullptr;
-                  }
-                  delete[] array_;
-                  capacity_ = qty_ = 0;
-                  array_ = nullptr;
+    ~StringArray()
+    {
+        if (array_) {
+            for (unsigned i = 0; i < qty_; ++i) {
+                delete[] array_[i];
+                array_[i] = nullptr;
             }
-      }
+            delete[] array_;
+            capacity_ = qty_ = 0;
+            array_           = nullptr;
+        }
+    }
 
-      StringArray(StringArray const &)                = delete;
-      StringArray(StringArray &&) noexcept            = delete;
-      StringArray &operator=(StringArray const &)     = delete;
-      StringArray &operator=(StringArray &&) noexcept = delete;
+    StringArray(StringArray const &)                = delete;
+    StringArray(StringArray &&) noexcept            = delete;
+    StringArray &operator=(StringArray const &)     = delete;
+    StringArray &operator=(StringArray &&) noexcept = delete;
 
-      ND char *push_blank(size_t len)
-      {
-            if (qty_ + 1 == capacity_) {
-                  capacity_ += default_capacity;
-                  auto **tmp = new char *[capacity_];
-                  memmove(tmp, array_, qty_ * sizeof(char *));
-                  delete[] array_;
-                  array_ = tmp;
-            }
+    ND char *push_blank(size_t len)
+    {
+        if (qty_ + 1 == capacity_) {
+            capacity_ += default_capacity;
+            auto **tmp = new char *[capacity_];
+            memmove(tmp, array_, qty_ * sizeof(char *));
+            delete[] array_;
+            array_ = tmp;
+        }
 
-            auto *str = new char[len + 1];
-            array_[qty_++] = str;
-            return str;
-      }
+        auto *str      = new char[len + 1];
+        array_[qty_++] = str;
+        return str;
+    }
 
-      void push(char const *orig, size_t len)
-      {
-            char *str = push_blank(len);
-            memcpy(str, orig, len + 1);
-      }
+    void push(char const *orig, size_t len)
+    {
+        char *str = push_blank(len);
+        memcpy(str, orig, len + 1);
+    }
 
-      void push(char const *orig)             { push(orig,        strlen(orig)); }
-      void push(std::string const &orig)      { push(orig.data(), orig.size());  }
-      void push(std::string_view const &orig) { push(orig.data(), orig.size());  }
+    void push(char const *orig)             { push(orig,        strlen(orig)); }
+    void push(std::string const &orig)      { push(orig.data(), orig.size());  }
+    void push(std::string_view const &orig) { push(orig.data(), orig.size());  }
 
-      template <size_t N>
-      void push(char const (&str)[N])
-      {
-            push(str, N);
-      }
+    template <size_t N>
+    void push(char const (&str)[N])
+    {
+        push(str, N);
+    }
 
-      ND bool     empty()    const { return qty_ == 0; }
-      ND uint32_t size()     const { return qty_; }
-      ND uint32_t capacity() const { return capacity_; }
+    ND bool     empty()    const { return qty_ == 0; }
+    ND uint32_t size()     const { return qty_; }
+    ND uint32_t capacity() const { return capacity_; }
 
-      ND char const *const *const &data() const &
-      {
-            return array_;
-      }
+    ND char const *const *const &data() const &
+    {
+        return array_;
+    }
 
-      ND char **&data() &
-      {
-            return array_;
-      }
+    ND char **&data() &
+    {
+        return array_;
+    }
 };
 
 /*--------------------------------------------------------------------------------------*/
 
 class RandomBitProvider
 {
-      using random_type = std::mt19937;
+    using random_type = std::minstd_rand;
 
-    public:
-      RandomBitProvider()
-          : RandomBitProvider(rnd_device_())
-      {}
+  public:
+    RandomBitProvider()
+        : RandomBitProvider(rnd_device_())
+    {}
 
-      explicit RandomBitProvider(uint32_t seed)
-          : random_engine_(seed),
-            current_(random_engine_())
-      {}
+    explicit RandomBitProvider(uint32_t seed)
+        : random_engine_(seed),
+          current_(random_engine_())
+    {}
 
-      ND unsigned operator()()
-      {
-            if (avail_ > 0) {
-                  --avail_;
-            } else {
-                  avail_   = num_bits - 1U;
-                  current_ = random_engine_();
-            }
+    ND unsigned operator()()
+    {
+        if (avail_ > 0) {
+            --avail_;
+        } else {
+            avail_   = num_bits - 1U;
+            current_ = random_engine_();
+        }
 
-            unsigned ret = current_ & 1U;
-            current_ >>= 1;
-            return ret;
-      }
+        unsigned ret = current_ & 1U;
+        current_ >>= 1;
+        return ret;
+    }
 
-    private:
-      static constexpr int num_bits = sizeof(uint32_t) * CHAR_BIT;
-      inline static std::random_device rnd_device_{};
+  private:
+    static constexpr int num_bits = sizeof(uint32_t) * CHAR_BIT;
+    inline static std::random_device rnd_device_{};
 
-      random_type random_engine_;
-      uint32_t    current_;
-      int         avail_ = num_bits;
+    random_type random_engine_;
+    uint32_t    current_;
+    int         avail_ = num_bits;
 };
 
 /*--------------------------------------------------------------------------------------*/
@@ -368,72 +372,76 @@ class RandomBitProvider
 
 class ClockCounter final
 {
-    public:
-      ClockCounter() = default;
-      explicit ClockCounter(uint16_t low, uint16_t high)
-          : current_(low), low_period_(low), high_period_(high)
-      {}
+  public:
+    ClockCounter()
+        : periods_({1, 1})
+    {}
+    explicit ClockCounter(uint16_t period)
+        : periods_({period, period})
+    {}
+    explicit ClockCounter(uint16_t low, uint16_t high)
+        : periods_({low, high})
+    {}
 
-      bool tick()
-      {
-            if (++counter_ >= current_) {
-                  state_   = !state_;
-                  counter_ = 0;
-                  current_ = get_period();
-                  return true;
-            }
-            return false;
-      }
+    bool tick()
+    {
+        if (++counter_ >= periods_[state_]) {
+            state_   = state_ ? 0 : 1;
+            counter_ = 0;
+            return true;
+        }
+        return false;
+    }
 
-      ND bool is_zero() const { return counter_ == 0; }
-      ND int  counter() const { return counter_; }
+    ND bool is_zero() const { return counter_ == 0; }
+    ND int  counter() const { return counter_; }
 
-      void set_period(unsigned low, unsigned high)
-      {
-            low_period_  = static_cast<uint16_t>(low);
-            high_period_ = static_cast<uint16_t>(high);
-      }
+    void set_period(uint16_t period)
+    {
+        set_period(period, period);
+    }
 
-      std::vector<int32_t> GIDs;
+    void set_period(uint16_t low, uint16_t high)
+    {
+        periods_[0] = low;
+        periods_[1] = high;
+    }
 
-    private:
-      alignas(int)
-      uint16_t  current_     = 1;
-      uint16_t  counter_     = 0;
-      uint16_t  low_period_  = 1;
-      uint16_t  high_period_ = 1;
-      bool      state_       = false;
+    std::vector<int32_t> GIDs;
 
-      ND uint16_t get_period() const { return state_ ? high_period_ : low_period_; }
+  private:
+    std::array<uint16_t, 2> periods_;
+    uint16_t counter_ = 0;
+    uint8_t  state_   = 0;
 };
 
 
 class TimerCounter final
 {
-    public:
-      explicit TimerCounter(uint32_t period = 1)
-          : period_(period)
-      {}
+  public:
+    explicit TimerCounter(uint32_t period = 1)
+        : period_(period)
+    {}
 
-      bool tick()
-      {
-            if (++counter_ >= period_) [[unlikely]] {
-                  counter_ = 0;
-                  return true;
-            }
-            return false;
-      }
+    bool tick()
+    {
+        if (++counter_ >= period_) [[unlikely]] {
+            counter_ = 0;
+            return true;
+        }
+        return false;
+    }
 
-      ND bool     is_zero() const { return counter_ == 0; }
-      ND uint32_t counter() const { return counter_; }
+    ND bool     is_zero() const { return counter_ == 0; }
+    ND uint32_t counter() const { return counter_; }
 
-      void set_period(uint32_t val) { period_ = val; }
+    void set_period(uint32_t val) { period_ = val; }
 
-      std::vector<int32_t> GIDs;
+    std::vector<int32_t> GIDs;
 
-    private:
-      uint32_t period_;
-      uint32_t counter_ = 0;
+  private:
+    uint32_t period_;
+    uint32_t counter_ = 0;
 };
 
 

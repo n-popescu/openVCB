@@ -129,8 +129,7 @@ class Preprocessor
 /*--------------------------------------------------------------------------------------*/
 
 
-void
-Preprocessor::run()
+void Preprocessor::run()
 {
     delete p.error_messages;
     p.error_messages = new StringArray(32);
@@ -201,8 +200,8 @@ Preprocessor::run()
     // List of connections.
     // Build state vector.
     p.states_is_native = true;
-    p.states           = new InkState[p.writeMap.n];
-    p.stateInks        = new Ink[p.writeMap.n];
+    p.states    = new InkState[p.writeMap.n];
+    p.stateInks = new Ink[p.writeMap.n];
     if (p.writeMap.n > 0)
         p.states[0] = {0, false, Logic::None};
 
@@ -212,12 +211,12 @@ Preprocessor::run()
     memset(p.writeMap.ptr, 0, (p.writeMap.n + 1) * sizeof(int));
 
     for (int i = 0; i < p.writeMap.n; ++i) {
-        Group const &g        = indexDict[i];
-        InkState    &s        = p.states[i];
-        s.logic               = g.logic;
-        s.visited             = false;
-        s.activeInputs        = 0;
-        p.stateInks[i]        = g.ink;
+        Group const &g = indexDict[i];
+        InkState    &s = p.states[i];
+        s.logic        = g.logic;
+        s.visited      = false;
+        s.activeInputs = 0;
+        p.stateInks[i] = g.ink;
         p.writeMap.ptr[g.gid] = i;
     }
 
@@ -247,7 +246,7 @@ Preprocessor::run()
     // Prefix sum
     for (int i = 0, c = 0; i < p.writeMap.n; ++i) {
         p.writeMap.ptr[i] = c;
-        c      += accu[i];
+        c += accu[i];
         accu[i] = 0;
     }
 
@@ -287,19 +286,15 @@ Preprocessor::run()
     }
 
 #ifdef _DEBUG
-    {
-        FILE *dump = nullptr;
-        _wfopen_s(&dump, L"indexImage1.txt", L"w");
-        if (dump) {
-            for (size_t i = 0; i < canvas_size; ++i) {
-                if (p.indexImage[i] >= 0) {
-                    auto ink = static_cast<uint>(SetOff(p.image[i].ink));
-                    char const *name = ink > 0 && ink < std::size(inkNames)
-                                           ? inkNames[ink].data()
-                                           : "UNKNOWN";
-                    fwprintf(dump, L"%-7zu : %7d, %3d, %hs\n",
-                             i, p.indexImage[i], p.image[i].ink, name);
-                }
+    if (FILE *dump = fopen("indexImage1.txt", "w")) {
+        for (size_t i = 0; i < canvas_size; ++i) {
+            if (p.indexImage[i] >= 0) {
+                auto ink = static_cast<uint>(SetOff(p.image[i].ink));
+                char const *name = ink > 0 && ink < std::size(inkNames)
+                                       ? inkNames[ink].data()
+                                       : "UNKNOWN";
+                fprintf(dump, "%-7zu : %7d, %3d, %s\n",
+                        i, p.indexImage[i], static_cast<int>(p.image[i].ink), name);
             }
         }
         fclose(dump);
@@ -311,8 +306,7 @@ Preprocessor::run()
 /*--------------------------------------------------------------------------------------*/
 
 
-void
-Preprocessor::search(ivec vec)
+void Preprocessor::search(ivec vec)
 {
     int top_idx = calc_index(vec);
     if (visited.std()[top_idx] & 1)
@@ -452,8 +446,7 @@ Preprocessor::search(ivec vec)
     indexDict.push_back({gid, (inkLogicType(ink)), topPix.ink});
 }
 
-std::pair<Ink, int>
-Preprocessor::identify_ink(ivec vec, Ink ink)
+std::pair<Ink, int> Preprocessor::identify_ink(ivec vec, Ink ink)
 {
     int gid;
 
@@ -500,12 +493,12 @@ Preprocessor::identify_ink(ivec vec, Ink ink)
 
 /*--------------------------------------------------------------------------------------*/
 
-void
-Preprocessor::explore_bus(std::vector<ivec> &stack,
-                          ivec     const     pos,
-                          InkPixel const     pix,
-                          uint64_t const     mask,
-                          InkPixel const     busPix)
+void Preprocessor::explore_bus(
+    std::vector<ivec> &stack,
+    ivec const         pos,
+    InkPixel const     pix,
+    uint64_t const     mask,
+    InkPixel const     busPix)
 {
     std::vector busStack{pos};
     int idx = calc_index(pos);
@@ -621,13 +614,13 @@ Preprocessor::explore_bus(std::vector<ivec> &stack,
     }
 }
 
-bool
-Preprocessor::handle_tunnel(unsigned nindex,
-                            bool     ignoreMask,
-                            int      idx,
-                            int     &newIdx,
-                            Ink     &newInk,
-                            ivec    &newComp)
+bool Preprocessor::handle_tunnel(
+    unsigned nindex,
+    bool     ignoreMask,
+    int      idx,
+    int     &newIdx,
+    Ink     &newInk,
+    ivec    &newComp)
 {
     ivec     neighbor = fourNeighbors[nindex];
     ivec     origComp = newComp;
@@ -696,8 +689,7 @@ Preprocessor::handle_tunnel(unsigned nindex,
 
 /*--------------------------------------------------------------------------------------*/
 
-void
-Preprocessor::handle_read_ink(ivec vec)
+void Preprocessor::handle_read_ink(ivec vec)
 {
     int idx    = calc_index(vec);
     int srcGID = p.indexImage[idx];
@@ -723,8 +715,7 @@ Preprocessor::handle_read_ink(ivec vec)
     }
 }
 
-void
-Preprocessor::handle_write_ink(ivec vec)
+void Preprocessor::handle_write_ink(ivec vec)
 {
     int dstGID = p.indexImage[calc_index(vec)];
     // Check if we got any wire buses as baggage
@@ -777,8 +768,7 @@ int Preprocessor::calc_index(int x, int y) const
 
 glm::ivec2 Preprocessor::get_pos_from_index(int idx) const
 {
-    auto [quot, rem] = ::div(idx, p.width);
-    return {rem, quot};
+    return {idx % p.width, idx / p.width};
 }
 
 void

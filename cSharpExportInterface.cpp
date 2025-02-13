@@ -14,36 +14,37 @@ using MyMutex = std::mutex;
 # define EXPORT_API extern "C"
 #endif
 
-EXPORT_API int64_t   getLineNumber(int addr);
-EXPORT_API size_t    getSymbol(char const *buf, int size);
-EXPORT_API uint64_t  getNumTicks();
-EXPORT_API float     getMaxTPS();
-EXPORT_API uintptr_t getVMemAddress();
-
-EXPORT_API void setTickRate(float tps);
-EXPORT_API void tick(int tick);
-EXPORT_API void toggleLatch(int x, int y);
-EXPORT_API void toggleLatchIndex(int idx);
-EXPORT_API void addBreakpoint(int gid);
-EXPORT_API void removeBreakpoint(int gid);
-EXPORT_API int  pollBreakpoint();
-EXPORT_API void openVCB_SetClockPeriod(uint32_t high, uint32_t low);
-EXPORT_API void openVCB_SetTimerPeriod(uint32_t period);
-EXPORT_API void newProject(int64_t seed, bool vmemIsBytes);
-EXPORT_API int  initProject();
-EXPORT_API void initVMem(char const *assembly, int aSize, char *err, int errSize);
-EXPORT_API void deleteProject();
-EXPORT_API void addInstrumentBuffer(openVCB::InkState *buf, int bufSize, int idx);
-EXPORT_API void setStateMemory(int *data, int size) noexcept(false);
-EXPORT_API void setVMemMemory(void *data, int size);
-EXPORT_API void setIndicesMemory(int *data, int size);
-EXPORT_API void setImageMemory(void *data, int width, int height);
-EXPORT_API void setDecoMemory(int *__restrict indices, int indLen, int const *__restrict col, int colLen);
-EXPORT_API void getGroupStats(int *numGroups, int *numConnections);
-EXPORT_API void setInterface(openVCB::LatchInterface const *__restrict addr, openVCB::LatchInterface const *__restrict data);
 
 EXPORT_API char const *const *openVCB_CompileAndRun(size_t *numErrors, int *stateSize);
-EXPORT_API void openVCB_FreeErrorArray(char **arr, size_t numStrings);
+
+EXPORT_API int32_t   openVCB_InitProject(void);
+EXPORT_API int64_t   openVCB_GetLineNumber(int addr);
+EXPORT_API size_t    openVCB_GetSymbol(char const *buf, int size);
+EXPORT_API uint64_t  openVCB_GetNumTicks(void) noexcept;
+EXPORT_API uintptr_t openVCB_GetVMemAddress(void) noexcept;
+EXPORT_API float     openVCB_GetMaxTPS(void) noexcept;
+
+EXPORT_API void openVCB_SetTickRate(float tps) noexcept;
+EXPORT_API void openVCB_Tick(int tick);
+EXPORT_API void openVCB_ToggleLatch(int x, int y);
+EXPORT_API void openVCB_ToggleLatchIndex(int idx);
+EXPORT_API void openVCB_AddBreakpoint(int gid);
+EXPORT_API void openVCB_RemoveBreakpoint(int gid);
+EXPORT_API bool openVCB_PollBreakpoint(void) noexcept;
+EXPORT_API void openVCB_SetClockPeriod(uint32_t high, uint32_t low) noexcept;
+EXPORT_API void openVCB_SetTimerPeriod(uint32_t period) noexcept;
+EXPORT_API void openVCB_NewProject(int64_t seed, bool vmemIsBytes);
+EXPORT_API void openVCB_InitVMem(char const *assembly, int aSize, char *err, int errSize);
+EXPORT_API void openVCB_DeleteProject(void);
+EXPORT_API void openVCB_AddInstrumentBuffer(openVCB::InkState *buf, int bufSize, int idx);
+EXPORT_API void openVCB_SetStateMemory(int *data, int size);
+EXPORT_API void openVCB_SetVMemMemory(void *data, int size);
+EXPORT_API void openVCB_SetIndicesMemory(int *data, int size);
+EXPORT_API void openVCB_SetImageMemory(void *data, int width, int height);
+EXPORT_API void openVCB_SetDecoMemory(int *__restrict indices, int indLen, int const *__restrict col, int colLen);
+EXPORT_API void openVCB_GetGroupStats(int *numGroups, int *numConnections) noexcept;
+EXPORT_API void openVCB_SetInterface(openVCB::LatchInterface const *__restrict addr, openVCB::LatchInterface const *__restrict data);
+EXPORT_API void openVCB_FreeErrorArray(char **arr, size_t numStrings) noexcept;
 
 namespace util = openVCB::util;
 
@@ -53,17 +54,17 @@ namespace {
 
 using openVCB::Ink;
 
-constexpr double TARGET_DT = 1.0 / 60.0;
-constexpr double MIN_DT    = 1.0 / 30.0;
+constexpr float TARGET_DT = 1.0f / 60.0f;
+constexpr float MIN_DT    = 1.0f / 30.0f;
 
 openVCB::Project *proj      = nullptr;
 std::thread      *simThread = nullptr;
 MyMutex           simLock;
 
-double targetTPS     = 0.0;
-double maxTPS        = 0.0;
-bool   simRun        = true;
-bool   simBreakpoint = false;
+float targetTPS     = 0.0f;
+float maxTPS        = 0.0f;
+bool  simRun        = true;
+bool  simBreakpoint = false;
 
 
 [[gnu::hot]]
@@ -72,20 +73,20 @@ void simFunc()
     using std::chrono::duration, std::chrono::milliseconds;
     using clock = std::chrono::high_resolution_clock;
 
-    double tpsEst       = 2.0 / TARGET_DT;
-    double desiredTicks = 0.0;
-    auto   lastTime     = clock::now();
+    float tpsEst       = 2.0f / TARGET_DT;
+    float desiredTicks = 0.0f;
+    auto  lastTime     = clock::now();
 
     while (simRun) {
         auto curTime = clock::now();
-        auto diff    = duration_cast<duration<double>>(curTime - lastTime).count();
+        auto diff    = duration_cast<duration<float>>(curTime - lastTime).count();
         lastTime     = curTime;
         desiredTicks = glm::min(desiredTicks + diff * targetTPS, tpsEst * MIN_DT);
 
         // Find max tick amount we can do
-        if (desiredTicks >= 1.0) {
-            double maxTickAmount = glm::max(tpsEst * TARGET_DT, 1.0);
-            double tickAmount    = glm::min(desiredTicks, maxTickAmount);
+        if (desiredTicks >= 1.0f) {
+            float maxTickAmount = glm::max(tpsEst * TARGET_DT, 1.0f);
+            float tickAmount    = glm::min(desiredTicks, maxTickAmount);
 
             // Aquire lock, simulate, and time
             simLock.lock();
@@ -95,24 +96,24 @@ void simFunc()
             simLock.unlock();
 
             // Use timings to estimate max possible tps
-            desiredTicks = desiredTicks - static_cast<double>(res.numTicksProcessed);
-            maxTPS       = static_cast<double>(res.numTicksProcessed) /
-                           duration_cast<duration<double>>(t2 - t1).count();
+            desiredTicks = desiredTicks - static_cast<float>(res.numTicksProcessed);
+            maxTPS       = static_cast<float>(res.numTicksProcessed) /
+                           duration_cast<duration<float>>(t2 - t1).count();
 
             if (std::isfinite(maxTPS))
-                tpsEst = glm::clamp(glm::mix(maxTPS, tpsEst, 0.95), 1.0, 1e8);
+                tpsEst = glm::clamp(glm::mix(maxTPS, tpsEst, 0.95f), 1.0f, 1e8f);
             if (res.breakpoint) {
-                targetTPS     = 0.0;
-                desiredTicks  = 0.0;
+                targetTPS     = 0.0f;
+                desiredTicks  = 0.0f;
                 simBreakpoint = true;
             }
         }
 
         // Check how much time I got left and sleep until the next check
         curTime = clock::now();
-        diff    = duration_cast<duration<double>>(curTime - lastTime).count();
-        if (double ms = 1000.0 * (TARGET_DT - diff); ms > 1.05)
-            std::this_thread::sleep_for(milliseconds(static_cast<int64_t>(ms)));
+        diff    = duration_cast<duration<float>>(curTime - lastTime).count();
+        if (float ms = 1000.0f * (TARGET_DT - diff); ms > 1.05f)
+            std::this_thread::sleep_for(milliseconds(static_cast<int>(ms)));
     }
 }
 
@@ -125,7 +126,7 @@ void simFunc()
  */
 
 EXPORT_API int64_t
-getLineNumber(int addr)
+openVCB_GetLineNumber(int addr)
 {
     auto itr = proj->lineNumbers.find(addr);
     if (itr != proj->lineNumbers.end())
@@ -134,7 +135,7 @@ getLineNumber(int addr)
 }
 
 EXPORT_API size_t
-getSymbol(char const *buf, int size)
+openVCB_GetSymbol(char const *buf, int size)
 {
     auto itr = proj->assemblySymbols.find({buf, static_cast<size_t>(size)});
     if (itr != proj->assemblySymbols.end())
@@ -143,19 +144,19 @@ getSymbol(char const *buf, int size)
 }
 
 EXPORT_API uint64_t
-getNumTicks()
+openVCB_GetNumTicks() noexcept
 {
     return proj->tickNum;
 }
 
 EXPORT_API float
-getMaxTPS()
+openVCB_GetMaxTPS() noexcept
 {
     return static_cast<float>(maxTPS);
 }
 
 EXPORT_API uintptr_t
-getVMemAddress()
+openVCB_GetVMemAddress() noexcept
 {
 #ifdef OVCB_BYTE_ORIENTED_VMEM 
     if (proj->vmemIsBytes)
@@ -168,84 +169,82 @@ getVMemAddress()
 }
 
 EXPORT_API void
-setTickRate(float tps)
+openVCB_SetTickRate(float tps) noexcept
 {
-    targetTPS = static_cast<double>(glm::max(0.0f, tps));
+    targetTPS = static_cast<float>(glm::max(0.0f, tps));
 }
 
 EXPORT_API void
-tick(int tick)
+openVCB_Tick(int tick)
 {
     if (!proj)
         return;
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->tick(tick);
     targetTPS = tps;
 }
 
 EXPORT_API void
-toggleLatch(int x, int y)
+openVCB_ToggleLatch(int x, int y)
 {
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->toggleLatch(glm::ivec2(x, y));
     targetTPS = tps;
 }
 
 EXPORT_API void
-toggleLatchIndex(int idx)
+openVCB_ToggleLatchIndex(int idx)
 {
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->toggleLatch(idx);
     targetTPS = tps;
 }
 
 EXPORT_API void
-addBreakpoint(int gid)
+openVCB_AddBreakpoint(int gid)
 {
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->addBreakpoint(gid);
     targetTPS = tps;
 }
 
 EXPORT_API void
-removeBreakpoint(int gid)
+openVCB_RemoveBreakpoint(int gid)
 {
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->removeBreakpoint(gid);
     targetTPS = tps;
 }
 
-EXPORT_API int
-pollBreakpoint()
+EXPORT_API bool
+openVCB_PollBreakpoint() noexcept
 {
-    bool res      = simBreakpoint;
-    simBreakpoint = false;
-    return res;
+    return std::exchange(simBreakpoint, false);
 }
 
 EXPORT_API void
-openVCB_SetClockPeriod(uint32_t high, uint32_t low)
+openVCB_SetClockPeriod(uint32_t high, uint32_t low) noexcept
 {
     proj->tickClock.set_period(low, high);
 }
 
 EXPORT_API void
-openVCB_SetTimerPeriod(uint32_t period)
+openVCB_SetTimerPeriod(uint32_t period) noexcept
 {
     proj->realtimeClock.set_period(period);
 }
@@ -257,13 +256,14 @@ openVCB_SetTimerPeriod(uint32_t period)
  */
 
 EXPORT_API void
-newProject(int64_t seed, bool vmemIsBytes)
+openVCB_NewProject(int64_t seed, bool vmemIsBytes)
 {
+    std::lock_guard lock(simLock);
     proj = new openVCB::Project(seed, vmemIsBytes);
 }
 
 EXPORT_API int
-initProject()
+openVCB_InitProject()
 {
     std::lock_guard lock(simLock);
 
@@ -277,14 +277,15 @@ initProject()
 }
 
 EXPORT_API void
-initVMem(char const *assembly, int aSize, char *err, int errSize)
+openVCB_InitVMem(char const *assembly, int aSize, char *err, int errSize)
 {
+    std::lock_guard lock(simLock);
     proj->assembly = std::string(assembly, aSize);
     proj->assembleVmem(err, errSize);
 }
 
 EXPORT_API void
-deleteProject()
+openVCB_DeleteProject()
 {
     simRun = false;
     std::lock_guard lock(simLock);
@@ -312,18 +313,18 @@ deleteProject()
  */
 
 EXPORT_API void
-addInstrumentBuffer(openVCB::InkState *buf, int bufSize, int idx)
+openVCB_AddInstrumentBuffer(openVCB::InkState *buf, int bufSize, int idx)
 {
     std::lock_guard lock(simLock);
 
-    double tps = targetTPS;
-    targetTPS  = 0.0;
+    float tps = targetTPS;
+    targetTPS  = 0.0f;
     proj->instrumentBuffers.emplace_back(buf, bufSize, idx);
     targetTPS = tps;
 }
 
 EXPORT_API void
-setStateMemory(int *data, int size) noexcept(false)
+openVCB_SetStateMemory(int *data, int size)
 {
     std::lock_guard lock(simLock);
 
@@ -338,7 +339,7 @@ setStateMemory(int *data, int size) noexcept(false)
 }
 
 EXPORT_API void
-setVMemMemory(void *data, int size)
+openVCB_SetVMemMemory(void *data, int size)
 {
     std::lock_guard lock(simLock);
     proj->vmem     = static_cast<uint32_t *>(data);
@@ -346,14 +347,14 @@ setVMemMemory(void *data, int size)
 }
 
 EXPORT_API void
-setIndicesMemory(int *data, int size)
+openVCB_SetIndicesMemory(int *data, int size)
 {
     std::lock_guard lock(simLock);
     memcpy(data, proj->indexImage, sizeof(*proj->indexImage) * size);
 }
 
 EXPORT_API void
-setImageMemory(void *data, int width, int height)
+openVCB_SetImageMemory(void *data, int width, int height)
 {
     std::lock_guard lock(simLock);
     proj->width  = width;
@@ -362,8 +363,8 @@ setImageMemory(void *data, int width, int height)
 }
 
 EXPORT_API void
-setDecoMemory(int       *__restrict indices, UU int indLen,
-              int const *__restrict col,     UU int colLen)
+openVCB_SetDecoMemory(int       *__restrict indices, UU int indLen,
+                      int const *__restrict col,     UU int colLen)
 {
     std::lock_guard lock(simLock);
 
@@ -416,7 +417,7 @@ setDecoMemory(int       *__restrict indices, UU int indLen,
  */
 
 EXPORT_API void
-getGroupStats(int *numGroups, int *numConnections)
+openVCB_GetGroupStats(int *numGroups, int *numConnections) noexcept
 {
     //std::lock_guard lock(simLock);
     *numGroups      = proj->numGroups;
@@ -424,7 +425,7 @@ getGroupStats(int *numGroups, int *numConnections)
 }
 
 EXPORT_API void
-setInterface(openVCB::LatchInterface const *__restrict addr,
+openVCB_SetInterface(openVCB::LatchInterface const *__restrict addr,
              openVCB::LatchInterface const *__restrict data)
 {
     std::lock_guard lock(simLock);
@@ -468,7 +469,7 @@ openVCB_CompileAndRun(size_t *numErrors, int *stateSize)
 }
 
 EXPORT_API void 
-openVCB_FreeErrorArray(char **arr, size_t numStrings)
+openVCB_FreeErrorArray(char **arr, size_t numStrings) noexcept
 {
     if (arr) {
         for (size_t i = 0; i < numStrings; ++i)

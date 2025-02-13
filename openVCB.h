@@ -12,17 +12,17 @@
 #include "openVCB_Data.hh"
 
 #if defined _MSC_VER
-#  define OVCB_CONSTEXPR constexpr __forceinline
-#  define OVCB_INLINE    __forceinline
-#  if !(defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER)
-#    pragma warning(disable: 5030)  // Unrecognized attribute
-#  endif
+# define OVCB_CONSTEXPR constexpr __forceinline
+# define OVCB_INLINE    __forceinline
+# if !(defined __GNUC__ || defined __clang__ || defined __INTEL_COMPILER || defined __INTEL_LLVM_COMPILER)
+#   pragma warning(disable: 5030)  // Unrecognized attribute
+# endif
 #elif defined __GNUC__ || defined __clang__
-#  define OVCB_CONSTEXPR __attribute__((__always_inline__)) constexpr inline
-#  define OVCB_INLINE    __attribute__((__always_inline__)) inline
+# define OVCB_CONSTEXPR __attribute__((__always_inline__)) constexpr inline
+# define OVCB_INLINE    __attribute__((__always_inline__)) inline
 #else
-#  define OVCB_CONSTEXPR constexpr inline
-#  define OVCB_INLINE    inline
+# define OVCB_CONSTEXPR constexpr inline
+# define OVCB_INLINE    inline
 #endif
 
 
@@ -39,70 +39,70 @@ namespace openVCB {
 /// to make sure the values are aligned correctly.
 /// </summary>
 enum class Ink : uint8_t {
-      None = 0,
+    None = 0,
 
-      TraceOff,
-      ReadOff,
-      WriteOff,
-      Cross,
-      BufferOff,
-      OrOff,
-      NandOff,
-      NotOff,
-      NorOff,
-      AndOff,
-      XorOff,
-      XnorOff,
-      ClockOff,
-      LatchOff,
-      LedOff,
-      BusOff,
+    TraceOff,
+    ReadOff,
+    WriteOff,
+    Cross,
+    BufferOff,
+    OrOff,
+    NandOff,
+    NotOff,
+    NorOff,
+    AndOff,
+    XorOff,
+    XnorOff,
+    ClockOff,
+    LatchOff,
+    LedOff,
+    BusOff,
 
-      Filler,
-      Annotation,
+    Filler,
+    Annotation,
 
-      TunnelOff,
-      Mesh,
-      TimerOff,
-      RandomOff,
-      BreakpointOff,
-      Wireless0Off,
-      Wireless1Off,
-      Wireless2Off,
-      Wireless3Off,
+    TunnelOff,
+    Mesh,
+    TimerOff,
+    RandomOff,
+    BreakpointOff,
+    Wireless0Off,
+    Wireless1Off,
+    Wireless2Off,
+    Wireless3Off,
 
-      _numTypes,
-      _inkOn = 0x80,
+    _numTypes,
+    _inkOn = 0x80,
 
-      Trace        = TraceOff  | _inkOn,
-      Read         = ReadOff   | _inkOn,
-      Write        = WriteOff  | _inkOn,
-      InvalidCross = Cross     | _inkOn,
-      Buffer       = BufferOff | _inkOn,
-      Or           = OrOff     | _inkOn,
-      Nand         = NandOff   | _inkOn,
-      Not          = NotOff    | _inkOn,
-      Nor          = NorOff    | _inkOn,
-      And          = AndOff    | _inkOn,
-      Xor          = XorOff    | _inkOn,
-      Xnor         = XnorOff   | _inkOn,
-      Clock        = ClockOff  | _inkOn,
-      Latch        = LatchOff  | _inkOn,
-      Led          = LedOff    | _inkOn,
-      Bus          = BusOff    | _inkOn,
+    Trace        = TraceOff  | _inkOn,
+    Read         = ReadOff   | _inkOn,
+    Write        = WriteOff  | _inkOn,
+    InvalidCross = Cross     | _inkOn,
+    Buffer       = BufferOff | _inkOn,
+    Or           = OrOff     | _inkOn,
+    Nand         = NandOff   | _inkOn,
+    Not          = NotOff    | _inkOn,
+    Nor          = NorOff    | _inkOn,
+    And          = AndOff    | _inkOn,
+    Xor          = XorOff    | _inkOn,
+    Xnor         = XnorOff   | _inkOn,
+    Clock        = ClockOff  | _inkOn,
+    Latch        = LatchOff  | _inkOn,
+    Led          = LedOff    | _inkOn,
+    Bus          = BusOff    | _inkOn,
 
-      InvalidFiller     = Filler     | _inkOn,
-      InvalidAnnotation = Annotation | _inkOn,
+    InvalidFiller     = Filler     | _inkOn,
+    InvalidAnnotation = Annotation | _inkOn,
 
-      Tunnel      = TunnelOff     | _inkOn,
-      InvalidMesh = Mesh          | _inkOn,
-      Timer       = TimerOff      | _inkOn,
-      Random      = RandomOff     | _inkOn,
-      Breakpoint  = BreakpointOff | _inkOn,
-      Wireless0   = Wireless0Off  | _inkOn,
-      Wireless1   = Wireless1Off  | _inkOn,
-      Wireless2   = Wireless2Off  | _inkOn,
-      Wireless3   = Wireless3Off  | _inkOn,
+    Tunnel      = TunnelOff     | _inkOn,
+    InvalidMesh = Mesh          | _inkOn,
+    Timer       = TimerOff      | _inkOn,
+    Random      = RandomOff     | _inkOn,
+    Breakpoint  = BreakpointOff | _inkOn,
+    Wireless0   = Wireless0Off  | _inkOn,
+    Wireless1   = Wireless1Off  | _inkOn,
+    Wireless2   = Wireless2Off  | _inkOn,
+    Wireless3   = Wireless3Off  | _inkOn,
 };
 
 
@@ -113,30 +113,30 @@ enum class Ink : uint8_t {
  * - This is seperate from Ink to simplify switch logic
  */
 enum class Logic : uint8_t {
-      None = 0,
+    None = 0,
 
-      NonZeroOff,
-      ZeroOff,
-      XorOff,
-      XnorOff,
-      LatchOff,
-      ClockOff,
-      TimerOff,
-      RandomOff,
-      BreakpointOff,
+    NonZeroOff,
+    ZeroOff,
+    XorOff,
+    XnorOff,
+    LatchOff,
+    ClockOff,
+    TimerOff,
+    RandomOff,
+    BreakpointOff,
 
-      _numTypes,
-      _inkOn = 0x80,
+    _numTypes,
+    _inkOn = 0x80,
 
-      NonZero    = NonZeroOff    | _inkOn,
-      Zero       = ZeroOff       | _inkOn,
-      Xor        = XorOff        | _inkOn,
-      Xnor       = XnorOff       | _inkOn,
-      Latch      = LatchOff      | _inkOn,
-      Clock      = ClockOff      | _inkOn,
-      Timer      = TimerOff      | _inkOn,
-      Random     = RandomOff     | _inkOn,
-      Breakpoint = BreakpointOff | _inkOn,
+    NonZero    = NonZeroOff    | _inkOn,
+    Zero       = ZeroOff       | _inkOn,
+    Xor        = XorOff        | _inkOn,
+    Xnor       = XnorOff       | _inkOn,
+    Latch      = LatchOff      | _inkOn,
+    Clock      = ClockOff      | _inkOn,
+    Timer      = TimerOff      | _inkOn,
+    Random     = RandomOff     | _inkOn,
+    Breakpoint = BreakpointOff | _inkOn,
 };
 
 
@@ -144,45 +144,45 @@ enum class Logic : uint8_t {
 
 
 struct InkState {
-      int16_t activeInputs; // Number of active inputs
-      bool    visited;      // Flags for traversal
-      Logic   logic;        // Current logic state
+    int16_t activeInputs; // Number of active inputs
+    bool    visited;      // Flags for traversal
+    Logic   logic;        // Current logic state
 };
 
 struct SparseMat {
-      int  n;    // Size of the matrix
-      int  nnz;  // Number of non-zero entries
-      int *ptr;  // CSC sparse matrix ptr
-      int *rows; // CSC sparse matrix rows
+    int  n;    // Size of the matrix
+    int  nnz;  // Number of non-zero entries
+    int *ptr;  // CSC sparse matrix ptr
+    int *rows; // CSC sparse matrix rows
 };
 
 // This represents a pixel with metadata as well as simulation ink type
 // Ths is for inks that have variants which do not affect the simulation:
 // i.e. colored traces.
 struct InkPixel {
-      Ink     ink;
-      int16_t meta;
+    Ink     ink;
+    int16_t meta;
 };
 
 // This is for asyncronous exchange of data.
 // for stuff like audio and signal scopes
 struct InstrumentBuffer {
-      InkState *buffer;
-      int32_t   bufferSize;
-      int32_t   idx;
+    InkState *buffer;
+    int32_t   bufferSize;
+    int32_t   idx;
 };
 
 struct SimulationResult {
-      int32_t numTicksProcessed;
-      bool    breakpoint;
+    int32_t numTicksProcessed;
+    bool    breakpoint;
 };
 
 struct LatchInterface {
-      glm::ivec2 pos;     // Coordinates of the LSB latch.
-      glm::ivec2 stride;  // Space between each latch (both x and y).
-      glm::ivec2 size;    // Physical ize of the latch in squares as (x,y) pair.
-      int        numBits; // Value always 32 or lower
-      int        gids[64];
+    glm::ivec2 pos;     // Coordinates of the LSB latch.
+    glm::ivec2 stride;  // Space between each latch (both x and y).
+    glm::ivec2 size;    // Physical ize of the latch in squares as (x,y) pair.
+    int        numBits; // Value always 32 or lower
+    int        gids[64];
 };
 
 /*--------------------------------------------------------------------------------------*/
@@ -199,133 +199,132 @@ namespace openVCB {
  */
 class Project
 {
-    public:
-      // This remains null if VMem is not actually used.
-      VMemWrapper vmem         = nullptr;
-      uint32_t    vmemSize     = 0;
-      uint32_t    lastVMemAddr = 0;
+  public:
+    // This remains null if VMem is not actually used.
+    VMemWrapper vmem         = nullptr;
+    uint32_t    vmemSize     = 0;
+    uint32_t    lastVMemAddr = 0;
+    uint64_t    tickNum      = 0;
 
-      LatchInterface vmAddr    = {{}, {}, {}, -1, {}};
-      LatchInterface vmData    = {{}, {}, {}, -1, {}};
-      std::string    assembly  = {};
-      int32_t        height    = 0;
-      int32_t        width     = 0;
-      int32_t        numGroups = 0;
+    LatchInterface vmAddr    = {{}, {}, {}, -1, {}};
+    LatchInterface vmData    = {{}, {}, {}, -1, {}};
+    std::string    assembly  = {};
+    int32_t        height    = 0;
+    int32_t        width     = 0;
+    int32_t        numGroups = 0;
 
-      // An image containing component indices.
-      uint8_t  *originalImage = nullptr;
-      InkPixel *image         = nullptr;
-      int32_t  *indexImage    = nullptr;
-      int32_t  *decoration[3] = {nullptr, nullptr, nullptr}; // on / off / unknown
+    // Event queue
+    uint32_t   qSize            = 0;
+    int32_t   *updateQ[2]       = {nullptr, nullptr};
+    int16_t   *lastActiveInputs = nullptr;
+    bool       states_is_native = false;
+    bool       vmemIsBytes      = false;
 
-      uint32_t ledPalette[16] = {
-            0x323841, 0xFFFFFF,
-            0xFF0000, 0x00FF00, 0x0000FF,
-            0xFF0000, 0x00FF00, 0x0000FF,
-            0xFF0000, 0x00FF00, 0x0000FF,
-            0xFF0000, 0x00FF00, 0x0000FF,
-            0xFF0000, 0x00FF00
-      };
+    RandomBitProvider random;
+    StringArray      *error_messages  = nullptr;
 
-      ClockCounter tickClock;
-      TimerCounter realtimeClock;
+    // An image containing component indices.
+    uint8_t  *originalImage = nullptr;
+    InkPixel *image         = nullptr;
+    int32_t  *indexImage    = nullptr;
+    int32_t  *decoration[3] = {nullptr, nullptr, nullptr}; // on / off / unknown
 
-      // Adjacentcy matrix.
-      // By default, the indices from ink groups first and then component groups.
-      SparseMat writeMap = {0, 0, nullptr, nullptr};
+    uint32_t ledPalette[16] = {
+        0x323841, 0xFFFFFF,
+        0xFF0000, 0x00FF00, 0x0000FF,
+        0xFF0000, 0x00FF00, 0x0000FF,
+        0xFF0000, 0x00FF00, 0x0000FF,
+        0xFF0000, 0x00FF00, 0x0000FF,
+        0xFF0000, 0x00FF00
+    };
 
-      // Stores the logic states of each group.
-      InkState *states = nullptr;
+    ClockCounter tickClock;
+    TimerCounter realtimeClock;
 
-      // Stores the actual ink type of each group.
-      Ink *stateInks = nullptr;
+    // Adjacentcy matrix.
+    // By default, the indices from ink groups first and then component groups.
+    SparseMat writeMap = {0, 0, nullptr, nullptr};
 
-      // Map of symbols during assembleVmem().
-      std::map<std::string, uint32_t> assemblySymbols;
-      std::map<uint32_t, uint32_t>    lineNumbers;
-      std::vector<InstrumentBuffer>   instrumentBuffers;
+    // Stores the logic states of each group.
+    InkState *states = nullptr;
 
-      uint64_t tickNum = 0;
+    // Stores the actual ink type of each group.
+    Ink *stateInks = nullptr;
 
-      // Event queue
-      int32_t   *updateQ[2]       = {nullptr, nullptr};
-      int16_t   *lastActiveInputs = nullptr;
-      uint32_t   qSize            = 0;
-      bool       states_is_native = false;
-      bool       vmemIsBytes;
+    // Map of symbols during assembleVmem().
+    std::map<std::string, uint32_t> assemblySymbols;
+    std::map<uint32_t, uint32_t>    lineNumbers;
+    std::vector<InstrumentBuffer>   instrumentBuffers;
 
-      StringArray      *error_messages  = nullptr;
-      RandomBitProvider random;
+    //---------------------------------------------------------------------------------
 
-      //---------------------------------------------------------------------------------
+    explicit Project(int64_t seed, bool vmemIsBytes);
+    ~Project();
 
-      explicit Project(int64_t seed, bool vmemIsBytes);
-      ~Project();
+    // Clang complains unless *all* possible constructors are defined.
+    Project(Project const &)                = delete;
+    Project &operator=(Project const &)     = delete;
+    Project(Project &&) noexcept            = delete;
+    Project &operator=(Project &&) noexcept = delete;
 
-      // Clang complains unless *all* possible constructors are defined.
-      Project(Project const &)                = delete;
-      Project &operator=(Project const &)     = delete;
-      Project(Project &&) noexcept            = delete;
-      Project &operator=(Project &&) noexcept = delete;
+    //---------------------------------------------------------------------------------
 
-      //---------------------------------------------------------------------------------
+    // Builds a project from an image. Remember to configure VMem.
+    void readFromVCB(std::string const &filePath);
 
-      // Builds a project from an image. Remember to configure VMem.
-      void readFromVCB(std::string const &filePath);
+    // Decode base64 data from clipboard, then process logic data.
+    bool readFromBlueprint(std::string clipboardData);
 
-      // Decode base64 data from clipboard, then process logic data.
-      bool readFromBlueprint(std::string clipboardData);
+    // Decompress zstd logic data to an image.
+    bool processLogicData(std::vector<uint8_t> const &logicData, int32_t headerSize);
 
-      // Decompress zstd logic data to an image.
-      bool processLogicData(std::vector<uint8_t> const &logicData, int32_t headerSize);
+    // Decompress zstd decoration data to an image.
+    static void processDecorationData(std::vector<uint8_t> const &decorationData,
+                                      int32_t                   *&decoData);
 
-      // Decompress zstd decoration data to an image.
-      static void processDecorationData(std::vector<uint8_t> const &decorationData,
-                                        int32_t                   *&decoData);
+    // Samples the ink at a pixel. Returns ink and group id.
+    ND std::pair<Ink, int32_t> sample(glm::ivec2 pos) const;
 
-      // Samples the ink at a pixel. Returns ink and group id.
-      ND std::pair<Ink, int32_t> sample(glm::ivec2 pos) const;
+    // Assemble the vmem from this->assembly.
+    void assembleVmem(char *errp = nullptr, size_t errSize = 256);
 
-      // Assemble the vmem from this->assembly.
-      void assembleVmem(char *errp = nullptr, size_t errSize = 256);
+    // Dump vmem contents to file.
+    void dumpVMemToText(std::string const &p) const;
 
-      // Dump vmem contents to file.
-      void dumpVMemToText(std::string const &p) const;
+    // Toggles the latch at position.
+    // Does nothing if it's not a latch.
+    void toggleLatch(glm::ivec2 pos);
 
-      // Toggles the latch at position.
-      // Does nothing if it's not a latch.
-      void toggleLatch(glm::ivec2 pos);
+    // Toggles the latch at position.
+    // Does nothing if it's not a latch.
+    void toggleLatch(int32_t gid);
 
-      // Toggles the latch at position.
-      // Does nothing if it's not a latch.
-      void toggleLatch(int32_t gid);
+    // Preprocesses the image into the simulation format.
+    void preprocess();
 
-      // Preprocesses the image into the simulation format.
-      void preprocess();
+    // Methods to add and remove breakpoints.
+    void addBreakpoint(int32_t gid);
+    void removeBreakpoint(int32_t gid);
 
-      // Methods to add and remove breakpoints.
-      void addBreakpoint(int32_t gid);
-      void removeBreakpoint(int32_t gid);
+    /// Advances the simulation by n ticks
+    [[gnu::hot]]
+    SimulationResult tick(int32_t numTicks = 1, int64_t maxEvents = INT64_MAX);
 
-      /// Advances the simulation by n ticks
-      [[gnu::hot]]
-      SimulationResult tick(int32_t numTicks = 1, int64_t maxEvents = INT64_MAX);
+    //---------------------------------------------------------------------------------
 
-      //---------------------------------------------------------------------------------
+  private:
+    [[gnu::hot]]
+    ND bool resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs);
 
-    private:
-      [[gnu::hot]]
-      ND bool resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs);
+    [[gnu::hot]]
+    bool tryEmit(int32_t gid);
 
-      [[gnu::hot]]
-      bool tryEmit(int32_t gid);
-
-      void handleWordVMemTick();
+    void handleWordVMemTick();
 #ifdef OVCB_BYTE_ORIENTED_VMEM
       void handleByteVMemTick();
 #endif
 
-      OVCB_INLINE bool GetRandomBit() { return static_cast<bool>(random()); }
+    OVCB_INLINE bool GetRandomBit() { return static_cast<bool>(random()); }
 };
 
 

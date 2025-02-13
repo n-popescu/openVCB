@@ -309,7 +309,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hh</PrecompiledHeaderFile>
@@ -354,7 +354,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>
       </ControlFlowGuard>
-      <AssemblerOutput>All</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hh</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
@@ -517,7 +517,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <AssemblerOutput>All</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hh</PrecompiledHeaderFile>
       <ForcedIncludeFiles>
@@ -546,8 +546,9 @@
       <StringPooling>
       </StringPooling>
       <Optimization>MaxSpeedHighLevel</Optimization>
-      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus -Qunused-arguments /clang:-flto=full -Qiopenmp /clang:-march=core-avx2 /clang:-mbmi /clang:-mbmi2 /clang:-fno-fast-math /fp:strict %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus -Qunused-arguments /clang:-flto=full -Qiopenmp /clang:-mbmi /clang:-mbmi2 /clang:-fno-fast-math /fp:strict %(AdditionalOptions)</AdditionalOptions>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <GenerateDebugInformation>Full</GenerateDebugInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -560,7 +561,7 @@
       <SYCLShowVerboseInformation>false</SYCLShowVerboseInformation>
       <Profile>
       </Profile>
-      <SpecifyCPUTargetForAOT>AVX512</SpecifyCPUTargetForAOT>
+      <SpecifyCPUTargetForAOT>AVX2</SpecifyCPUTargetForAOT>
       <SpecifyGPUTargetForAOT>Default</SpecifyGPUTargetForAOT>
       <EnableLinkDeviceLibraries>all</EnableLinkDeviceLibraries>
       <ShowProgress>

@@ -1,0 +1,12 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define PRINTF_FORMAT_STRING
+#define ND [[nodiscard]]
+#define UU [[maybe_unused]]
+#define OVCB_INLINE __forceinline 
+#define OVCB_CONSTEXPR constexpr __forceinline
+#define ATTRIBUTE_PRINTF(...)
+#define __attribute__(x)
+#define NODISCARD [[nodiscard]]
+#define EXPORT_API extern "C" __declspec(dllexport)

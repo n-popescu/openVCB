@@ -8,6 +8,16 @@
 
 #include "openVCB.h"
 
+#if defined __GNUC__
+# define ASSUME(cond) __attribute__((__assume__(cond)))
+#elif defined _MSC_VER
+# define ASSUME(cond) __assume(cond)
+#elif (defined __cplusplus && __cplusplus >= 202302L) || (defined _MSVC_LANG && _MSVC_LANG >= 202302L)
+# define ASSUME(cond) [[assume(cond)]]
+#else
+# define ASSUME(cond) 
+#endif
+
 namespace openVCB {
 /*======================================================================================*/
 
@@ -29,10 +39,10 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
         // VMem implementation.
         if (vmem) {
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-                  if (vmemIsBytes)
-                        handleByteVMemTick();
-                  else
-                        handleWordVMemTick();
+            if (vmemIsBytes)
+                handleByteVMemTick();
+            else
+                handleWordVMemTick();
 #else
             handleWordVMemTick();
 #endif
@@ -157,9 +167,15 @@ Project::tryEmit(int32_t gid)
 void
 Project::handleWordVMemTick()
 {
+    unsigned addrBits = static_cast<unsigned>(vmAddr.numBits);
+    unsigned dataBits = static_cast<unsigned>(vmData.numBits);
+    ASSUME(addrBits <= 32 && dataBits <= 32);
+    if (addrBits > 32 || dataBits > 32)
+        throw std::runtime_error("Disaster");
+
     // Get current address
     uint32_t addr = 0;
-    for (int k = 0; k < vmAddr.numBits; ++k)
+    for (unsigned k = 0; k < addrBits; ++k)
         addr |= static_cast<uint32_t>(IsOn(states[vmAddr.gids[k]].logic)) << k;
 
     if (addr != lastVMemAddr) {
@@ -168,7 +184,7 @@ Project::handleWordVMemTick()
         uint32_t data = vmem.i[addr];
 
         // Turn on those latches
-        for (int k = 0; k < vmData.numBits; ++k) {
+        for (unsigned k = 0; k < dataBits; ++k) {
             auto &state = states[vmData.gids[k]];
             if (((data >> k) & 1) != IsOn(state.logic)) {
                 state.activeInputs = 1;
@@ -180,12 +196,12 @@ Project::handleWordVMemTick()
         }
 
         // Forcibly ignore further address updates
-        for (int k = 0; k < vmAddr.numBits; ++k)
+        for (unsigned k = 0; k < addrBits; ++k)
             states[vmAddr.gids[k]].activeInputs = 0;
     } else {
         // Write address
         uint32_t data = 0;
-        for (int k = 0; k < vmData.numBits; ++k)
+        for (unsigned k = 0; k < dataBits; ++k)
             data |= static_cast<uint32_t>(IsOn(states[vmData.gids[k]].logic)) << k;
 
         vmem.i[addr] = data;
@@ -197,9 +213,15 @@ Project::handleWordVMemTick()
 void
 Project::handleByteVMemTick()
 {
+    unsigned addrBits = static_cast<unsigned>(vmAddr.numBits);
+    unsigned dataBits = static_cast<unsigned>(vmData.numBits);
+    ASSUME(addrBits <= 32 && dataBits <= 32);
+    if (addrBits > 32 || dataBits > 32)
+        throw std::runtime_error("Disaster");
+
     // Get current address
     uint32_t addr = 0;
-    for (int k = 0; k < vmAddr.numBits; ++k)
+    for (unsigned k = 0; k < addrBits; ++k)
         addr |= static_cast<uint32_t>(IsOn(states[vmAddr.gids[k]].logic)) << k;
 
     if (addr != lastVMemAddr) {
@@ -209,7 +231,7 @@ Project::handleByteVMemTick()
         memcpy(&data, vmem.b + addr, sizeof data);
 
         // Turn on those latches
-        for (int k = 0; k < vmData.numBits; ++k) {
+        for (unsigned k = 0; k < dataBits; ++k) {
             auto &state = states[vmData.gids[k]];
             if (((data >> k) & 1) != IsOn(state.logic)) {
                 state.activeInputs = 1;
@@ -221,18 +243,18 @@ Project::handleByteVMemTick()
         }
 
         // Forcibly ignore further address updates
-        for (int k = 0; k < vmAddr.numBits; ++k)
+        for (unsigned k = 0; k < addrBits; ++k)
             states[vmAddr.gids[k]].activeInputs = 0;
     } else {
         // Write address
         uint32_t data = 0;
-        for (int k = 0; k < vmData.numBits; ++k)
+        for (unsigned k = 0; k < dataBits; ++k)
             data |= static_cast<uint32_t>(IsOn(states[vmData.gids[k]].logic)) << k;
 
         uint32_t tmp;
         memcpy(&tmp, vmem.b + addr, sizeof data);
-        tmp = tmp >> vmData.numBits;
-        tmp = static_cast<uint32_t>(static_cast<uint64_t>(tmp) << vmData.numBits);
+        tmp = tmp >> dataBits;
+        tmp = static_cast<uint32_t>(static_cast<uint64_t>(tmp) << dataBits);
         data |= tmp;
         memcpy(vmem.b + addr, &data, sizeof data);
     }

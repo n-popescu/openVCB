@@ -1,8 +1,8 @@
 #include "openVCB.h"
 
 
-namespace openVCB
-{
+namespace openVCB {
+
 static constexpr uint32_t B64index[256] = {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -12,99 +12,97 @@ static constexpr uint32_t B64index[256] = {
       34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
 };
 
-std::vector<uint8_t>
-b64decode(std::string const &data)
+static std::vector<uint8_t> b64decode(std::string const &data)
 {
-      size_t   len    = data.length();
-      uint32_t pad    = len > 0 && (len % 4 || data[len - 1] == '=');
-      size_t   size   = ((len + 3) / 4 - pad) * 4;
-      auto     result = std::vector<uint8_t>(size / 4 * 3 + pad);
+    size_t   len    = data.length();
+    uint32_t pad    = len > 0 && (len % 4 || data[len - 1] == '=');
+    size_t   size   = ((len + 3) / 4 - pad) * 4;
+    auto     result = std::vector<uint8_t>(size / 4 * 3 + pad);
 
-      for (size_t i = 0, j = 0; i < size; i += 4) {
-            uint32_t n = B64index[static_cast<size_t>(data[i])] << 18 |
-                         B64index[static_cast<size_t>(data[i + 1])] << 12 |
-                         B64index[static_cast<size_t>(data[i + 2])] << 6 |
-                         B64index[static_cast<size_t>(data[i + 3])];
+    for (size_t i = 0, j = 0; i < size; i += 4) {
+        uint32_t n = B64index[static_cast<uint8_t>(data[i + 0])] << 18 |
+                     B64index[static_cast<uint8_t>(data[i + 1])] << 12 |
+                     B64index[static_cast<uint8_t>(data[i + 2])] <<  6 |
+                     B64index[static_cast<uint8_t>(data[i + 3])] <<  0;
 
-            result[j++] = (n >> 16) & 0xFF;
-            result[j++] = (n >> 8) & 0xFF;
-            result[j++] = n & 0xFF;
-      }
+        result[j++] = (n >> 16) & 0xFF;
+        result[j++] = (n >> 8) & 0xFF;
+        result[j++] = n & 0xFF;
+    }
 
-      if (pad) {
-            uint32_t n = B64index[data[size]] << 18 | B64index[data[size + 1]] << 12;
-            result[result.size() - 1] = n >> 16;
+    if (pad) {
+        uint32_t n = B64index[static_cast<uint8_t>(data[size])]     << 18 |
+                     B64index[static_cast<uint8_t>(data[size + 1])] << 12;
+        result[result.size() - 1] = static_cast<uint8_t>(n >> 16);
 
-            if (len > size + 2 && data[size + 2] != '=') {
-                  n |= B64index[data[size + 2]] << 6;
-                  result.push_back(n >> 8 & 0xFF);
-            }
-      }
+        if (len > size + 2 && data[size + 2] != '=') {
+            n |= B64index[static_cast<uint8_t>(data[size + 2])] << 6;
+            result.push_back(n >> 8 & 0xFF);
+        }
+    }
 
-      return result;
+    return result;
 }
 
-bool
-isBase64(std::string const &text)
+static bool isBase64(std::string const &text)
 {
-      size_t const len = text.length();
-      size_t       i   = 0;
+    size_t const len = text.length();
+    size_t       i   = 0;
 
-      // must be multiple of 4
-      if (len % 4 != 0)
-            return false;
+    // must be multiple of 4
+    if (len % 4 != 0)
+        return false;
 
-      /* It wouldn't surprise me if this were actually slower. */
-      return std::ranges::all_of(text, [len, &i](char ch) {
-            bool ret = ::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=');
-            ++i;
-            return !ret;
-      });
+    /* It wouldn't surprise me if this were actually slower. */
+    return std::ranges::all_of(text, [len, &i](char ch) {
+        bool ret = ::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=');
+        ++i;
+        return !ret;
+    });
 
 #if 0
-      // valid characters only
-      for (size_t i = 0; i < len; i++) {
-            char ch = text[i];
-            if (!(::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=')))
-                  return false;
-      }
+    // valid characters only
+    for (size_t i = 0; i < len; i++) {
+        char ch = text[i];
+        if (!(::isalnum(ch) || ch == '/' || ch == '+' || (i >= len - 3 && ch == '=')))
+            return false;
+    }
 
-      return true;
+    return true;
 #endif
 }
 
-std::string
-removeWhitespace(std::string str)
+static std::string removeWhitespace(std::string str)
 {
-      str.erase(std::ranges::remove_if(str, ::isspace).begin(), str.end());
-      return str;
+    str.erase(std::ranges::remove_if(str, ::isspace).begin(), str.end());
+    return str;
 }
 
-bool
-Project::readFromBlueprint(std::string clipboardData) // XXX: Does this need to be a copy?
+bool Project::readFromBlueprint(std::string clipboardData) // XXX: Does this need to be a copy?
 {
-      clipboardData = removeWhitespace(clipboardData);
+    clipboardData = removeWhitespace(clipboardData);
 
-      if (!isBase64(clipboardData))
-            return false;
+    if (!isBase64(clipboardData))
+        return false;
 
-      std::vector<uint8_t> logicData = b64decode(clipboardData);
+    std::vector<uint8_t> logicData = b64decode(clipboardData);
 
-      // check minimum size: zstd magic number [4] + vcb header [32]
-      if (logicData.size() <= 36)
-            return false;
+    // check minimum size: zstd magic number [4] + vcb header [32]
+    if (logicData.size() <= 36)
+        return false;
 
-      union char2int {
-          uint8_t const  *ch;
-          uint32_t const *i;
-      };
-      char2int dummy = {.ch = logicData.data()};
+    union char2int {
+        uint8_t const  *ch;
+        uint32_t const *i;
+    };
+    char2int dummy = {.ch = logicData.data()};
 
-      // Check zstd magic number, and do it in a way that doesn't invoke
-      // undefined behavior.
-      if (dummy.i[0] != 0xFD2FB528U)
-            return false;
+    // Check zstd magic number, and do it in a way that doesn't invoke
+    // undefined behavior.
+    if (dummy.i[0] != 0xFD2FB528U)
+        return false;
 
-      return processLogicData(logicData, 32);
+    return processLogicData(logicData, 32);
 }
+
 } // namespace openVCB

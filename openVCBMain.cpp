@@ -1,5 +1,5 @@
 #include "openVCB.h"
- 
+
 #ifndef NDEBUG
 # ifndef _DEBUG
 #  define _DEBUG
@@ -10,39 +10,39 @@
 /*--------------------------------------------------------------------------------------*/
 namespace openVCB::util {
 
-static FILE *log = nullptr;
+UU static FILE *log = nullptr;
 
 void logf(UU PRINTF_FORMAT_STRING format, ...)
 {
 #ifdef _DEBUG
-      if (!log)
-            return;
-      va_list ap;
-      va_start(ap, format);
-      (void)vfprintf(log, format, ap);
-      va_end(ap);
-      (void)fputc('\n', log);
-      (void)fflush(log);
+    if (!log)
+        return;
+    va_list ap;
+    va_start(ap, format);
+    (void)vfprintf(log, format, ap);
+    va_end(ap);
+    (void)fputc('\n', log);
+    (void)fflush(log);
 #endif
 }
 
 void logs(UU _In_z_ char const *msg, UU size_t len)
 {
 #ifdef _DEBUG
-      if (!log)
-            return;
-      (void)fwrite(msg, 1, len, log);
-      (void)fputc('\n', log);
+    if (!log)
+        return;
+    (void)fwrite(msg, 1, len, log);
+    (void)fputc('\n', log);
 #endif
 }
 
 void logs(UU _In_z_ char const *msg)
 {
 #ifdef _DEBUG
-      if (!log)
-            return;
-      (void)fputs(msg, log);
-      (void)fputc('\n', log);
+    if (!log)
+        return;
+    (void)fputs(msg, log);
+    (void)fputc('\n', log);
 #endif
 }
 
@@ -57,45 +57,45 @@ void logs(UU _In_z_ char const *msg)
 # include <Windows.h>
 
 BOOL WINAPI
-DllMain(HINSTANCE inst, DWORD fdwReason, LPVOID)
+DllMain(UU HINSTANCE inst, DWORD fdwReason, LPVOID)
 {
-      using namespace std::literals;
+    using namespace std::literals;
 
-      switch (fdwReason) {
-      case DLL_PROCESS_ATTACH: {
+    switch (fdwReason) {
+    case DLL_PROCESS_ATTACH: {
 # ifdef _DEBUG
-            (void)::_set_abort_behavior(0, _WRITE_ABORT_MSG);
-            (void)::signal(SIGABRT, [](int){});
+        (void)::_set_abort_behavior(0, _WRITE_ABORT_MSG);
+        (void)::signal(SIGABRT, [](int) {});
 
-            wchar_t fname[2048];
-            if (::GetModuleFileNameW(inst, fname, std::size(fname)) == 0) {
-                  ::MessageBoxW(nullptr, L"Error determining openVCB.dll file path.", L"ERROR", MB_OK);
-                  ::exit(1);
-            }
-            auto path = absolute(std::filesystem::path(fname)).parent_path();
-            path     /= L"OpenVCB.log"sv;
+        wchar_t fname[2048];
+        if (::GetModuleFileNameW(inst, fname, std::size(fname)) == 0) {
+            ::MessageBoxW(nullptr, L"Error determining openVCB.dll file path.", L"ERROR", MB_OK);
+            ::exit(1);
+        }
+        auto path = absolute(std::filesystem::path(fname)).parent_path();
+        path /= L"OpenVCB.log"sv;
 
-            if (_wfopen_s(&openVCB::util::log, path.c_str(), L"w") != 0) {
-                  ::MessageBoxW(nullptr, L"Error opening openVCB.dll log file.", L"ERROR", MB_OK);
-                  ::exit(1);
-            }
+        if (_wfopen_s(&openVCB::util::log, path.c_str(), L"w") != 0) {
+            ::MessageBoxW(nullptr, L"Error opening openVCB.dll log file.", L"ERROR", MB_OK);
+            ::exit(1);
+        }
 # endif
-            break;
-      }
+        break;
+    }
 
-      case DLL_PROCESS_DETACH:
+    case DLL_PROCESS_DETACH:
 # ifdef _DEBUG
-            if (openVCB::util::log)
-                  (void)fclose(openVCB::util::log);
-            break;
+        if (openVCB::util::log)
+            (void)fclose(openVCB::util::log);
+        break;
 # endif
 
-      case DLL_THREAD_ATTACH:
-      case DLL_THREAD_DETACH:
-      default:
-            break;
-      }
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    default:
+        break;
+    }
 
-      return TRUE;
+    return TRUE;
 }
 #endif
