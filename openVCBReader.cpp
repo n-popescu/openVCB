@@ -322,8 +322,10 @@ void Project::readFromVCB(std::string const &filePath)
             }
         }
 
-        // printf("Loaded image %dx%i (%i bytes)\n", width, height, dSize);
-    }
+            //printf("Loaded image %dx%i (%i bytes)\n", width, height, dSize);
+      } else {
+            printf("Probable error: no VCB logic data found.\n");
+      }
 
     processDecorationData(decorationData[0], decoration[0]);
     processDecorationData(decorationData[1], decoration[1]);
