@@ -41,7 +41,7 @@ color2ink(uint32_t col)
     for (int i = 0; i < 16; ++i) {
         if (col == traceColors[i]) {
             pix.meta = static_cast<int16_t>(i);
-            pix.ink  = Ink::Trace;
+            pix.ink  = Ink::TraceOn;
             break;
         }
     }
@@ -304,7 +304,7 @@ void Project::readFromVCB(std::string const &filePath)
                     for (pos.y = start.y; pos.y < end.y; pos.y++) {
                         if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height)
                             continue;
-                        image[pos.x + pos.y * width].ink = Ink::LatchOff;
+                        image[pos.x + pos.y * width].ink = Ink::Latch;
                     }
                 }
             }
@@ -316,7 +316,7 @@ void Project::readFromVCB(std::string const &filePath)
                     for (pos.y = start.y; pos.y < end.y; pos.y++) {
                         if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height)
                             continue;
-                        image[pos.x + pos.y * width].ink = Ink::LatchOff;
+                        image[pos.x + pos.y * width].ink = Ink::Latch;
                     }
                 }
             }

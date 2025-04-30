@@ -93,7 +93,7 @@ Project::assembleVmem(char *errp, size_t errSize)
       uint32_t    lineLoc   = 0;
 
       while (lineLoc < assembly.size()) {
-            // Read a line in.
+            // ReadOn a line in.
             std::string line = getNextLine(asmBuffer, lineLoc, lineNum);
             if (line.empty())
                   continue;
@@ -132,7 +132,7 @@ Project::assembleVmem(char *errp, size_t errSize)
 
       while (lineLoc != assembly.size()) {
             uint32_t lNum = lineNum;
-            // Read a line in.
+            // ReadOn a line in.
             std::string line = getNextLine(asmBuffer, lineLoc, lineNum);
             if (line.empty())
                   continue;
@@ -203,7 +203,7 @@ Project::assembleVmem(char *errp, size_t errSize)
                   glm::ivec2 pos = data.pos + i * data.stride;
                   data.gids[i]   = indexImage[pos.x + pos.y * width];
 
-                  if (data.gids[i] == -1 || SetOff(states[data.gids[i]].logic) != Logic::LatchOff) {
+                  if (data.gids[i] == -1 || SetOff(states[data.gids[i]].logic) != Logic::Latch) {
                         ::printf("error: No %s latch at VMem position %d %d\n",
                                  msg, pos.x, pos.y);
                         ::exit(1);

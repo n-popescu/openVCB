@@ -62,8 +62,7 @@ ND OVCB_CONSTEXPR Logic operator|(Logic val1, Ink val2) { return static_cast<Log
 ND OVCB_CONSTEXPR Logic operator&(Logic val1, Ink val2) { return static_cast<Logic>(static_cast<uint>(val1) & static_cast<uint>(val2)); }
 
 
-constexpr bool
-operator==(InkPixel const &first, InkPixel const &second) noexcept
+constexpr bool operator==(InkPixel const &first, InkPixel const &second) noexcept
 {
     return first.ink == second.ink && first.meta == second.meta;
 }
@@ -79,25 +78,25 @@ operator==(InkPixel const &first, InkPixel const &second) noexcept
  */
 ND OVCB_CONSTEXPR Logic SetOn(Logic logic, unsigned state)
 {
-    return (logic & 0x7F) | (state << 7);
+    return (logic & ~Logic::_logicOn) | (state << 7);
 }
 
 // Sets the ink type to be on
 ND OVCB_CONSTEXPR Logic SetOn(Logic logic)
 {
-    return logic | 0x80U;
+    return logic | Logic::_logicOn;
 }
 
 // Sets the ink type to be off
 ND OVCB_CONSTEXPR Logic SetOff(Logic logic)
 {
-    return logic & 0x7F;
+    return logic & ~Logic::_logicOn;
 }
 
 // Gets the ink active state
 ND OVCB_CONSTEXPR bool IsOn(Logic logic)
 {
-    return static_cast<bool>(logic & 0x80);
+    return static_cast<bool>(logic & Logic::_logicOn);
 }
 
 /*--------------------------------------------------------------------------------------*/
@@ -111,25 +110,25 @@ ND OVCB_CONSTEXPR bool IsOn(Logic logic)
  */
 ND OVCB_CONSTEXPR Ink SetOn(Ink ink, unsigned state)
 {
-    return (ink & 0x7F) | (state << 7);
+    return (ink & ~Ink::_inkOn) | (state << 7);
 }
 
 // Sets the ink type to be on.
 ND OVCB_CONSTEXPR Ink SetOn(Ink ink)
 {
-    return ink | 0x80U;
+    return ink | Ink::_inkOn;
 }
 
 // Sets the ink type to be off
 ND OVCB_CONSTEXPR Ink SetOff(Ink ink)
 {
-    return ink & 0x7FU;
+    return ink & ~Ink::_inkOn;
 }
 
 // Gets the ink active state
 ND OVCB_CONSTEXPR bool IsOn(Ink ink)
 {
-    return static_cast<bool>(ink & 0x80U);
+    return static_cast<bool>(ink & Ink::_inkOn);
 }
 
 
@@ -141,28 +140,28 @@ inkLogicType(Ink ink)
     ink = SetOff(ink);
 
     switch (ink) { // NOLINT(clang-diagnostic-switch-enum)
-    case Ink::LatchOff:      return Logic::LatchOff;
-    case Ink::ClockOff:      return Logic::ClockOff;
-    case Ink::RandomOff:     return Logic::RandomOff;
-    case Ink::TimerOff:      return Logic::TimerOff;
-    case Ink::BreakpointOff: return Logic::BreakpointOff;
+    case Ink::Latch:      return Logic::Latch;
+    case Ink::Clock:      return Logic::Clock;
+    case Ink::Random:     return Logic::Random;
+    case Ink::Timer:      return Logic::Timer;
+    case Ink::Breakpoint: return Logic::Breakpoint;
 
-    case Ink::XorOff:
-        return Logic::XorOff;
-    case Ink::XnorOff:
-        return Logic::XnorOff;
+    case Ink::Xor:
+        return Logic::Xor;
+    case Ink::Xnor:
+        return Logic::Xnor;
 
-    case Ink::NotOff:
-    case Ink::NorOff:
-    case Ink::AndOff:
-        return Logic::ZeroOff;
+    case Ink::Not:
+    case Ink::Nor:
+    case Ink::And:
+        return Logic::Zero;
 
-    case Ink::NandOff:
-    case Ink::OrOff:
-    case Ink::BufferOff:
-    case Ink::TraceOff:
+    case Ink::Nand:
+    case Ink::Or:
+    case Ink::Buffer:
+    case Ink::Trace:
     default:
-        return Logic::NonZeroOff;
+        return Logic::NonZero;
     }
 }
 
@@ -182,15 +181,11 @@ union VMemWrapper
     uint8_t  *b;
 
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-    using value_type = uint8_t;
-    ND auto       &def()       & noexcept { return b; }
-    ND auto const &def() const & noexcept { return b; }
 # define DEF_POINTER b
+    using value_type = uint8_t;
 #else
 # define DEF_POINTER i
     using value_type = uint32_t;
-    ND auto       &def()       & noexcept { return i; }
-    ND auto const &def() const & noexcept { return i; }
 #endif
 
     //---------------------------------------------------------------------------------
@@ -210,8 +205,11 @@ union VMemWrapper
     //---------------------------------------------------------------------------------
 
     // Automatically use the default member when indexing.
-    ND auto const &operator[](size_t idx) const & noexcept { return DEF_POINTER[idx]; }
-    ND auto       &operator[](size_t idx)       & noexcept { return DEF_POINTER[idx]; }
+    ND auto const &operator[](size_t idx) const noexcept { return DEF_POINTER[idx]; }
+    ND auto       &operator[](size_t idx)       noexcept { return DEF_POINTER[idx]; }
+
+    ND auto       &def()       noexcept { return DEF_POINTER; }
+    ND auto const &def() const noexcept { return DEF_POINTER; }
 
     // Assign pointers to the default union member.
     VMemWrapper &operator=(value_type *ptr) noexcept

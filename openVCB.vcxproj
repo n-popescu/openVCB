@@ -396,8 +396,8 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /clang:-mtune=native /clang:-march=native /clang:-Ofast /clang:-fvectorize /clang:-fslp-vectorize /clang:-flto=full /clang:-fuse-ld=lld /clang:-mprefer-vector-width=256 /clang:-Wl,--lto-O3 -Qunused-arguments -openmp /clang:-Werror=format /clang:-Wno-macro-redefined /clang:-Wno-char-subscripts /clang:-masm=intel %(AdditionalOptions)</AdditionalOptions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /clang:-mtune=native /clang:-march=native /clang:-Ofast /clang:-fvectorize /clang:-fslp-vectorize /clang:-flto=full /clang:-fuse-ld=lld /clang:-mprefer-vector-width=512 /clang:-Wl,--lto-O3 -Qunused-arguments  /clang:-Werror=format /clang:-Wno-macro-redefined /clang:-Wno-char-subscripts /clang:-masm=intel %(AdditionalOptions)</AdditionalOptions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>
       </ControlFlowGuard>
@@ -458,7 +458,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(VcpkgRoot)\installed\$(VcpkgTriplet)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OmitFramePointers>true</OmitFramePointers>
-      <UseProcessorExtensions>HOST</UseProcessorExtensions>
+      <UseProcessorExtensions>CORE512</UseProcessorExtensions>
       <EmitOptimizationDiagnosticsToFile>
       </EmitOptimizationDiagnosticsToFile>
       <OpenMPOffloading>None</OpenMPOffloading>

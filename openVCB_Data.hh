@@ -47,12 +47,12 @@ constexpr uint32_t colorPallet[56] = {
 
     // On
     0x000000,
-    0xA19856, // Trace
-    0x63B1FF, // Read
+    0xA19856, // TraceOn
+    0x63B1FF, // ReadOn
     0xFF5E5E, // Write
     0x66788E, // InvalidCross
 
-    0x92FF63, // Buffer
+    0x92FF63, // BufferOn
     0x63F2FF, // OR
     0xFFA200, // NAND
 
@@ -63,20 +63,20 @@ constexpr uint32_t colorPallet[56] = {
     0xAE74FF, // XOR
     0xA600FF, // XNOR
 
-    0xFF0041, // Clock
-    0x63FF9F, // Latch
+    0xFF0041, // ClockOn
+    0x63FF9F, // LatchOn
     0xFFFFFF, // LED
 
-    0x24417A, // Bus
+    0x24417A, // BusOn
 
     0xA1AB8C, // Filler (INVALID)
     0x3F4B5B, // Annotation (INVALID)
 
-    0x535572, // Tunnel
+    0x535572, // InvalidTunnel
     0x646A57, // Mesh
-    0xFF6700, // Timer
-    0xE5FF00, // Random
-    0xE00000, // Breakpoint
+    0xFF6700, // TimerOn
+    0xE5FF00, // RandomOn
+    0xE00000, // BreakpointOn
     0xFF00BF, // Wireless_1
     0xFF00AF, // Wireless_2
     0xFF009F, // Wireless_3

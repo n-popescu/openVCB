@@ -96,30 +96,30 @@ class Preprocessor
     {
         //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
         switch (ink) {
-        case Ink::TraceOff:      return UINT64_C(2) << meta;
-        case Ink::TunnelOff:     return UINT64_C(2) << (16 + (meta % 4));
-        case Ink::BusOff:        return UINT64_C(2) << (20 + meta);
-        case Ink::ReadOff:       return UINT64_C(2) << 26;
-        case Ink::WriteOff:      return UINT64_C(2) << 27;
-        case Ink::BufferOff:     return UINT64_C(2) << 28;
-        case Ink::OrOff:         return UINT64_C(2) << 29;
-        case Ink::NandOff:       return UINT64_C(2) << 30;
-        case Ink::NotOff:        return UINT64_C(2) << 31;
-        case Ink::NorOff:        return UINT64_C(2) << 32;
-        case Ink::AndOff:        return UINT64_C(2) << 33;
-        case Ink::XorOff:        return UINT64_C(2) << 34;
-        case Ink::XnorOff:       return UINT64_C(2) << 35;
-        case Ink::ClockOff:      return UINT64_C(2) << 36;
-        case Ink::LatchOff:      return UINT64_C(2) << 37;
-        case Ink::Latch:         return UINT64_C(2) << 38;
-        case Ink::LedOff:        return UINT64_C(2) << 39;
-        case Ink::TimerOff:      return UINT64_C(2) << 40;
-        case Ink::RandomOff:     return UINT64_C(2) << 41;
-        case Ink::BreakpointOff: return UINT64_C(2) << 42;
-        case Ink::Wireless0Off:  return UINT64_C(2) << 43;
-        case Ink::Wireless1Off:  return UINT64_C(2) << 44;
-        case Ink::Wireless2Off:  return UINT64_C(2) << 45;
-        case Ink::Wireless3Off:  return UINT64_C(2) << 46;
+        case Ink::Trace:      return UINT64_C(2) << meta;
+        case Ink::Tunnel:     return UINT64_C(2) << (16 + (meta % 4));
+        case Ink::Bus:        return UINT64_C(2) << (20 + meta);
+        case Ink::Read:       return UINT64_C(2) << 26;
+        case Ink::Write:      return UINT64_C(2) << 27;
+        case Ink::Buffer:     return UINT64_C(2) << 28;
+        case Ink::Or:         return UINT64_C(2) << 29;
+        case Ink::Nand:       return UINT64_C(2) << 30;
+        case Ink::Not:        return UINT64_C(2) << 31;
+        case Ink::Nor:        return UINT64_C(2) << 32;
+        case Ink::And:        return UINT64_C(2) << 33;
+        case Ink::Xor:        return UINT64_C(2) << 34;
+        case Ink::Xnor:       return UINT64_C(2) << 35;
+        case Ink::Clock:      return UINT64_C(2) << 36;
+        case Ink::Latch:      return UINT64_C(2) << 37;
+        case Ink::LatchOn:         return UINT64_C(2) << 38;
+        case Ink::Led:        return UINT64_C(2) << 39;
+        case Ink::Timer:      return UINT64_C(2) << 40;
+        case Ink::Random:     return UINT64_C(2) << 41;
+        case Ink::Breakpoint: return UINT64_C(2) << 42;
+        case Ink::Wireless0:  return UINT64_C(2) << 43;
+        case Ink::Wireless1:  return UINT64_C(2) << 44;
+        case Ink::Wireless2:  return UINT64_C(2) << 45;
+        case Ink::Wireless3:  return UINT64_C(2) << 46;
         default:                 return 0;
         }
     }
@@ -140,23 +140,23 @@ void Preprocessor::run()
     {
         auto &ink = p.image[i].ink;
 #if 0
-        if (ink != Ink::Latch && IsOn(ink))
+        if (ink != Ink::LatchOn && IsOn(ink))
             ink = SetOff(ink);
 #else
         //NOLINTNEXTLINE(clang-diagnostic-switch-enum)
         switch (ink) {
-        case Ink::Trace:     case Ink::Read:
-        case Ink::Write:     case Ink::Buffer:
-        case Ink::Or:        case Ink::And:
-        case Ink::Xor:       case Ink::Not:
-        case Ink::Nor:       case Ink::Nand:
-        case Ink::Xnor:      case Ink::Clock:
-        case Ink::Led:       case Ink::Bus:
-        case Ink::Timer:     case Ink::Random:
-        case Ink::Tunnel:    case Ink::Breakpoint:
-        case Ink::Wireless0: case Ink::Wireless1:
-        case Ink::Wireless2: case Ink::Wireless3:
-        case Ink::InvalidMesh:
+        case Ink::TraceOn:     case Ink::ReadOn:
+        case Ink::WriteOn:     case Ink::BufferOn:
+        case Ink::OrOn:        case Ink::AndOn:
+        case Ink::XorOn:       case Ink::NotOn:
+        case Ink::NorOn:       case Ink::NandOn:
+        case Ink::XnorOn:      case Ink::ClockOn:
+        case Ink::LedOn:       case Ink::BusOn:
+        case Ink::TimerOn:     case Ink::RandomOn:
+        case Ink::Wireless0On: case Ink::Wireless1On:
+        case Ink::Wireless2On: case Ink::Wireless3On:
+        case Ink::InvalidMesh: case Ink::InvalidTunnel:
+        case Ink::BreakpointOn:
             ink = SetOff(ink);
             break;
         default:
@@ -253,7 +253,7 @@ void Preprocessor::run()
     // Populate
     for (auto const [first, second] : conList) {
         // Set the active inputs of AND to be -numInputs
-        if (util::eq_any(p.stateInks[second], Ink::AndOff, Ink::NandOff))
+        if (util::eq_any(p.stateInks[second], Ink::And, Ink::Nand))
             --p.states[second].activeInputs;
 
         auto idx = p.writeMap.ptr[first] + accu[first]++;
@@ -275,13 +275,13 @@ void Preprocessor::run()
     // Insert starting events into the queue
     for (int i = 0; i < p.writeMap.n; ++i) {
         Ink ink = p.stateInks[i];
-        if (ink == Ink::ClockOff)
+        if (ink == Ink::Clock)
             p.tickClock.GIDs.push_back(i);
-        else if (ink == Ink::TimerOff)
+        else if (ink == Ink::Timer)
             p.realtimeClock.GIDs.push_back(i);
-        else if (util::eq_any(ink, Ink::NandOff, Ink::NotOff, Ink::NorOff, Ink::XnorOff, Ink::Latch))
+        else if (util::eq_any(ink, Ink::Nand, Ink::Not, Ink::Nor, Ink::Xnor, Ink::LatchOn))
             p.updateQ[0][p.qSize++] = i;
-        if (ink == Ink::Latch)
+        if (ink == Ink::LatchOn)
             p.states[i].activeInputs = 1;
     }
 
@@ -345,7 +345,7 @@ void Preprocessor::search(ivec vec)
                 continue;
 
             // Handle wire buses.
-            if (ink != Ink::BusOff && newInk == Ink::BusOff) {
+            if (ink != Ink::Bus && newInk == Ink::Bus) {
                 // What kind of ink are we again?
                 auto pix  = p.image[idx];
                 auto mask = get_mask(pix);
@@ -384,10 +384,10 @@ void Preprocessor::search(ivec vec)
                 if (visited.std()[newIdx] & 1)
                     continue;
                 newInk = p.image[newIdx].ink;
-                if (newInk == Ink::TunnelOff)
+                if (newInk == Ink::Tunnel)
                     continue;
             }
-            else if (newInk == Ink::TunnelOff) {
+            else if (newInk == Ink::Tunnel) {
                 if (!handle_tunnel(nindex, false, idx, newIdx, newInk, newComp))
                     continue;
             }
@@ -416,7 +416,7 @@ void Preprocessor::search(ivec vec)
                 continue;
             }
             else if (visited.std()[newIdx] & 1) {
-                if (ink == Ink::BusOff && newInk != Ink::BusOff && get_mask(p.image[idx]) != 0) {
+                if (ink == Ink::Bus && newInk != Ink::Bus && get_mask(p.image[idx]) != 0) {
                     // Try to insert new connection
                     auto otherIdx = p.indexImage[newIdx];
                     auto shifted  = static_cast<int64_t>(gid) << 32;
@@ -427,11 +427,11 @@ void Preprocessor::search(ivec vec)
             }
 
             // Push back if Allowable
-            if (newInk == Ink::ReadOff && ink == Ink::TraceOff) {
+            if (newInk == Ink::Read && ink == Ink::Trace) {
                 readInks.push_back(newComp);
                 visited.std()[newIdx] |= 1;
                 stack.push_back(newComp);
-            } else if (newInk == Ink::WriteOff && ink == Ink::TraceOff) {
+            } else if (newInk == Ink::Write && ink == Ink::Trace) {
                 writeInks.push_back(newComp);
                 visited.std()[newIdx] |= 1;
                 stack.push_back(newComp);
@@ -454,29 +454,29 @@ std::pair<Ink, int> Preprocessor::identify_ink(ivec vec, Ink ink)
     switch (ink) {
     case Ink::None:
     case Ink::Cross:
-    case Ink::TunnelOff:
+    case Ink::Tunnel:
     case Ink::Mesh:
     case Ink::Annotation:
     case Ink::Filler:
         return {Ink::None, -1};
 
-    case Ink::ReadOff:
+    case Ink::Read:
         readInks.push_back(vec);
-        ink = Ink::TraceOff;
+        ink = Ink::Trace;
         gid = p.writeMap.n++;
         break;
 
-    case Ink::WriteOff:
+    case Ink::Write:
         writeInks.push_back(vec);
-        ink = Ink::TraceOff;
+        ink = Ink::Trace;
         gid = p.writeMap.n++;
         break;
 
-    case Ink::Wireless0Off:
-    case Ink::Wireless1Off:
-    case Ink::Wireless2Off:
-    case Ink::Wireless3Off: {
-        int i = Ink::Wireless3Off - ink;
+    case Ink::Wireless0:
+    case Ink::Wireless1:
+    case Ink::Wireless2:
+    case Ink::Wireless3: {
+        int i = Ink::Wireless3 - ink;
         if (wirelessIDs[i] < 0)
             wirelessIDs[i] = p.writeMap.n++;
         gid = wirelessIDs[i];
@@ -524,27 +524,27 @@ void Preprocessor::explore_bus(
             if (newPix.ink == Ink::None)
                 continue;
 
-            if (newPix.ink == Ink::ReadOff) {
+            if (newPix.ink == Ink::Read) {
                 if (*newVis & 1)
                     continue;
                 readInks.push_back(newComp);
-                if (pix.ink == Ink::ReadOff) {
+                if (pix.ink == Ink::Read) {
                     *newVis |= 1;
                     stack.push_back(newComp);
                 }
                 continue;
             }
-            if (newPix.ink == Ink::WriteOff) {
+            if (newPix.ink == Ink::Write) {
                 if (*newVis & 1)
                     continue;
                 writeInks.push_back(newComp);
-                if (pix.ink == Ink::WriteOff) {
+                if (pix.ink == Ink::Write) {
                     *newVis |= 1;
                     stack.push_back(newComp);
                 }
                 continue;
             }
-            if (newPix.ink == Ink::TraceOff) {
+            if (newPix.ink == Ink::Trace) {
                 if (*newVis & 1)
                     continue;
                 // We will only connect to traces of the matching color
@@ -554,7 +554,7 @@ void Preprocessor::explore_bus(
                 }
                 continue;
             }
-            if (newPix.ink != Ink::BusOff && pix == newPix) {
+            if (newPix.ink != Ink::Bus && pix == newPix) {
                 if (*newVis & 1)
                     continue;
                 // We will only connect to traces of the matching color
@@ -574,10 +574,10 @@ void Preprocessor::explore_bus(
                 if (*newVis & mask)
                     continue;
                 newPix = p.image[newIdx];
-                if (newPix.ink == Ink::TunnelOff)
+                if (newPix.ink == Ink::Tunnel)
                     continue;
             }
-            else if (newPix.ink == Ink::TunnelOff) {
+            else if (newPix.ink == Ink::Tunnel) {
                 if (*newVis & mask)
                     continue;
                 *newVis |= mask;
@@ -604,7 +604,7 @@ void Preprocessor::explore_bus(
                 continue;
             }
 
-            if (newPix.ink == Ink::BusOff) {
+            if (newPix.ink == Ink::Bus) {
                 if (*newVis & mask)
                     continue;
                 *newVis |= mask;
@@ -625,7 +625,7 @@ bool Preprocessor::handle_tunnel(
     ivec     neighbor = fourNeighbors[nindex];
     ivec     origComp = newComp;
     InkPixel origPix  = p.image[calc_index(origComp - neighbor)];
-    uint64_t origMask = get_mask(Ink::TunnelOff, nindex);
+    uint64_t origMask = get_mask(Ink::Tunnel, nindex);
 
     if (!ignoreMask) {
         if (visited.std()[idx] & origMask)
@@ -641,7 +641,7 @@ bool Preprocessor::handle_tunnel(
             return false;
         }
         int tunIdx = calc_index(tunComp);
-        if (p.image[tunIdx].ink != Ink::TunnelOff)
+        if (p.image[tunIdx].ink != Ink::Tunnel)
             continue;
         uint64_t &tunVis = visited.std()[tunIdx];
 
@@ -657,13 +657,13 @@ bool Preprocessor::handle_tunnel(
         InkPixel tunPix = p.image[tunIdx];
 
         // If there are two tunnel inks in a row, we are going to need to do the above calculation again.
-        if (tunPix.ink == Ink::TunnelOff)
+        if (tunPix.ink == Ink::Tunnel)
             goto retry;
 
         if (tunPix == origPix) {
             if (!ignoreMask) {
                 // get_mask() for tunnels ensures that its argument is between 0 and 3.
-                uint64_t mask = get_mask(Ink::TunnelOff, nindex + 2);
+                uint64_t mask = get_mask(Ink::Tunnel, nindex + 2);
                 if (tunVis & mask)
                     return false;
                 tunVis |= mask;
@@ -703,7 +703,7 @@ void Preprocessor::handle_read_ink(ivec vec)
         auto ink    = p.image[newIdx].ink;
 
         // Ignore any buses or clocks
-        if (util::eq_any(ink, Ink::BusOff, Ink::ClockOff, Ink::TimerOff))
+        if (util::eq_any(ink, Ink::Bus, Ink::Clock, Ink::Timer))
             continue;
 
         auto dstGID = p.indexImage[newIdx];
@@ -728,7 +728,7 @@ void Preprocessor::handle_write_ink(ivec vec)
         auto newIdx = calc_index(nvec);
 
         // Ignore any buses
-        if (p.image[newIdx].ink == Ink::BusOff)
+        if (p.image[newIdx].ink == Ink::Bus)
             continue;
 
         auto srcGID = p.indexImage[newIdx];

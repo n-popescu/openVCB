@@ -91,7 +91,7 @@ main()
       auto  times      = std::vector<tagged_time_point<clock::time_point>>();
       times.reserve(100);
 
-      // Read .vcb file
+      // ReadOn .vcb file
       times.emplace_back("File read"sv, clock::now());
       proj->readFromVCB("sampleProject.vcb");
 

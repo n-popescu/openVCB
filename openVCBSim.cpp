@@ -23,8 +23,7 @@ namespace openVCB {
 
 
 [[gnu::hot]]
-SimulationResult
-Project::tick(int32_t numTicks, int64_t maxEvents)
+SimulationResult Project::tick(int32_t numTicks, int64_t maxEvents)
 {
     SimulationResult res = {0, false};
     int64_t totalEvents = 0;
@@ -74,7 +73,7 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
 
                 // Copy over last active inputs
                 lastActiveInputs[i] = states[gid].activeInputs;
-                if (SetOff(ink) == Logic::LatchOff)
+                if (SetOff(ink) == Logic::Latch)
                     states[gid].activeInputs = 0;
             }
 
@@ -83,7 +82,7 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
                 int  gid        = updateQ[0][i];
                 auto curInk     = states[gid];
                 bool lastActive = IsOn(curInk.logic);
-                bool nextActive = resolve_state(res, curInk, lastActive, lastActiveInputs[i]);
+                bool nextActive = resolve_state(res, curInk, lastActiveInputs[i], lastActive);
 
                 // Short circuit if the state didn't change
                 if (lastActive == nextActive)
@@ -101,7 +100,7 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
                     Logic nxtInk = SetOff(states[nxtId].logic);
 
                     // Ignore falling edge for latches
-                    if (!nextActive && nxtInk == Logic::LatchOff)
+                    if (!nextActive && nxtInk == Logic::Latch)
                         continue;
 
                     // Update actives
@@ -110,7 +109,7 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
 
                     // Inks have convenient "critical points"
                     // We can skip any updates that do not hover around 0 with a few exceptions.
-                    if (lastNxtInput == 0 || lastNxtInput + delta == 0 || nxtInk == Logic::XorOff || nxtInk == Logic::XnorOff)
+                    if (lastNxtInput == 0 || lastNxtInput + delta == 0 || nxtInk == Logic::Xor || nxtInk == Logic::Xnor)
                         tryEmit(nxtId);
                 }
             }
@@ -127,20 +126,20 @@ Project::tick(int32_t numTicks, int64_t maxEvents)
 }
 
 
-[[gnu::hot]] bool
-Project::resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs)
+[[gnu::hot]]
+bool Project::resolve_state(SimulationResult &res, InkState curInk, int lastInputs, bool lastActive)
 {
     // NOLINTNEXTLINE(clang-diagnostic-switch-enum)
     switch (SetOff(curInk.logic)) {
-    case Logic::NonZeroOff: return lastInputs != 0;
-    case Logic::ZeroOff:    return lastInputs == 0;
-    case Logic::XorOff:     return lastInputs & 1;
-    case Logic::XnorOff:    return !(lastInputs & 1);
-    case Logic::LatchOff:   return lastActive ^ (lastInputs & 1);
-    case Logic::RandomOff:  return lastInputs > 0 && (lastActive || GetRandomBit());
-    case Logic::ClockOff:   return tickClock.is_zero()     ? !lastActive : lastActive;
-    case Logic::TimerOff:   return realtimeClock.is_zero() ? !lastActive : lastActive;
-    case Logic::BreakpointOff: {
+    case Logic::NonZero: return lastInputs;
+    case Logic::Zero:    return !lastInputs;
+    case Logic::Xor:     return lastInputs & 1;
+    case Logic::Xnor:    return !(lastInputs & 1);
+    case Logic::Latch:   return lastActive ^ (lastInputs & 1);
+    case Logic::Random:  return lastInputs && (lastActive || GetRandomBit());
+    case Logic::Clock:   return tickClock.is_zero()     ? !lastActive : lastActive;
+    case Logic::Timer:   return realtimeClock.is_zero() ? !lastActive : lastActive;
+    case Logic::Breakpoint: {
         bool ret = lastInputs > 0;
         if (ret)
             res.breakpoint = true;
@@ -152,8 +151,8 @@ Project::resolve_state(SimulationResult &res, InkState curInk, bool lastActive, 
 }
 
 
-[[gnu::hot]] bool
-Project::tryEmit(int32_t gid)
+[[gnu::hot]]
+bool Project::tryEmit(int32_t gid)
 {
     // Check if this event is already in queue.
     if (states[gid].visited)
@@ -164,8 +163,7 @@ Project::tryEmit(int32_t gid)
 }
 
 
-void
-Project::handleWordVMemTick()
+void Project::handleWordVMemTick()
 {
     unsigned addrBits = static_cast<unsigned>(vmAddr.numBits);
     unsigned dataBits = static_cast<unsigned>(vmData.numBits);
@@ -173,10 +171,28 @@ Project::handleWordVMemTick()
     if (addrBits > 32 || dataBits > 32)
         throw std::runtime_error("Disaster");
 
+#if 0
+    static constexpr uint32_t addrMasks[] = {
+        0x00000001, 0x00000002, 0x00000004, 0x00000008,
+        0x00000010, 0x00000020, 0x00000040, 0x00000080,
+        0x00000100, 0x00000200, 0x00000400, 0x00000800,
+        0x00001000, 0x00002000, 0x00004000, 0x00008000,
+        0x00010000, 0x00020000, 0x00040000, 0x00080000,
+        0x00100000, 0x00200000, 0x00400000, 0x00800000,
+        0x01000000, 0x02000000, 0x04000000, 0x08000000,
+        0x10000000, 0x20000000, 0x40000000, 0x80000000,
+    };
+
+    // Get current address
+    uint32_t addr = 0;
+    for (unsigned k = 0; k < addrBits; ++k)
+        addr |= IsOn(states[vmAddr.gids[k]].logic) ? addrMasks[k] : 0;
+#else
     // Get current address
     uint32_t addr = 0;
     for (unsigned k = 0; k < addrBits; ++k)
         addr |= static_cast<uint32_t>(IsOn(states[vmAddr.gids[k]].logic)) << k;
+#endif
 
     if (addr != lastVMemAddr) {
         // Load address
@@ -210,8 +226,7 @@ Project::handleWordVMemTick()
 
 
 #ifdef OVCB_BYTE_ORIENTED_VMEM
-void
-Project::handleByteVMemTick()
+void Project::handleByteVMemTick()
 {
     unsigned addrBits = static_cast<unsigned>(vmAddr.numBits);
     unsigned dataBits = static_cast<unsigned>(vmData.numBits);

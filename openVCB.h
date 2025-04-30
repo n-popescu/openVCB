@@ -41,68 +41,68 @@ namespace openVCB {
 enum class Ink : uint8_t {
     None = 0,
 
-    TraceOff,
-    ReadOff,
-    WriteOff,
-    Cross,
-    BufferOff,
-    OrOff,
-    NandOff,
-    NotOff,
-    NorOff,
-    AndOff,
-    XorOff,
-    XnorOff,
-    ClockOff,
-    LatchOff,
-    LedOff,
-    BusOff,
+    Trace  = 1,
+    Read   = 2,
+    Write  = 3,
+    Cross  = 4,
+    Buffer = 5,
+    Or     = 6,
+    Nand   = 7,
+    Not    = 8,
+    Nor    = 9,
+    And    = 10,
+    Xor    = 11,
+    Xnor   = 12,
+    Clock  = 13,
+    Latch  = 14,
+    Led    = 15,
+    Bus    = 16,
 
-    Filler,
-    Annotation,
+    Filler     = 17,
+    Annotation = 18,
+    Tunnel     = 19,
+    Mesh       = 20,
 
-    TunnelOff,
-    Mesh,
-    TimerOff,
-    RandomOff,
-    BreakpointOff,
-    Wireless0Off,
-    Wireless1Off,
-    Wireless2Off,
-    Wireless3Off,
+    Timer      = 21,
+    Random     = 22,
+    Breakpoint = 23,
+    Wireless0  = 24,
+    Wireless1  = 25,
+    Wireless2  = 26,
+    Wireless3  = 27,
 
-    _numTypes,
-    _inkOn = 0x80,
+    _numTypes = 28,
+    _inkOn    = 0x80,
 
-    Trace        = TraceOff  | _inkOn,
-    Read         = ReadOff   | _inkOn,
-    Write        = WriteOff  | _inkOn,
-    InvalidCross = Cross     | _inkOn,
-    Buffer       = BufferOff | _inkOn,
-    Or           = OrOff     | _inkOn,
-    Nand         = NandOff   | _inkOn,
-    Not          = NotOff    | _inkOn,
-    Nor          = NorOff    | _inkOn,
-    And          = AndOff    | _inkOn,
-    Xor          = XorOff    | _inkOn,
-    Xnor         = XnorOff   | _inkOn,
-    Clock        = ClockOff  | _inkOn,
-    Latch        = LatchOff  | _inkOn,
-    Led          = LedOff    | _inkOn,
-    Bus          = BusOff    | _inkOn,
+    TraceOn  = Trace  | _inkOn,
+    ReadOn   = Read   | _inkOn,
+    WriteOn  = Write  | _inkOn,
+    BufferOn = Buffer | _inkOn,
+    OrOn     = Or     | _inkOn,
+    NandOn   = Nand   | _inkOn,
+    NotOn    = Not    | _inkOn,
+    NorOn    = Nor    | _inkOn,
+    AndOn    = And    | _inkOn,
+    XorOn    = Xor    | _inkOn,
+    XnorOn   = Xnor   | _inkOn,
+    ClockOn  = Clock  | _inkOn,
+    LatchOn  = Latch  | _inkOn,
+    LedOn    = Led    | _inkOn,
+    BusOn    = Bus    | _inkOn,
 
+    InvalidCross      = Cross      | _inkOn,
     InvalidFiller     = Filler     | _inkOn,
     InvalidAnnotation = Annotation | _inkOn,
+    InvalidTunnel     = Tunnel     | _inkOn,
+    InvalidMesh       = Mesh       | _inkOn,
 
-    Tunnel      = TunnelOff     | _inkOn,
-    InvalidMesh = Mesh          | _inkOn,
-    Timer       = TimerOff      | _inkOn,
-    Random      = RandomOff     | _inkOn,
-    Breakpoint  = BreakpointOff | _inkOn,
-    Wireless0   = Wireless0Off  | _inkOn,
-    Wireless1   = Wireless1Off  | _inkOn,
-    Wireless2   = Wireless2Off  | _inkOn,
-    Wireless3   = Wireless3Off  | _inkOn,
+    TimerOn      = Timer      | _inkOn,
+    RandomOn     = Random     | _inkOn,
+    BreakpointOn = Breakpoint | _inkOn,
+    Wireless0On  = Wireless0  | _inkOn,
+    Wireless1On  = Wireless1  | _inkOn,
+    Wireless2On  = Wireless2  | _inkOn,
+    Wireless3On  = Wireless3  | _inkOn,
 };
 
 
@@ -115,28 +115,28 @@ enum class Ink : uint8_t {
 enum class Logic : uint8_t {
     None = 0,
 
-    NonZeroOff,
-    ZeroOff,
-    XorOff,
-    XnorOff,
-    LatchOff,
-    ClockOff,
-    TimerOff,
-    RandomOff,
-    BreakpointOff,
+    NonZero    = 1,
+    Zero       = 2,
+    Xor        = 3,
+    Xnor       = 4,
+    Latch      = 5,
+    Clock      = 6,
+    Timer      = 7,
+    Random     = 8,
+    Breakpoint = 9,
 
-    _numTypes,
-    _inkOn = 0x80,
+    _numTypes = 10,
+    _logicOn  = 0x80,
 
-    NonZero    = NonZeroOff    | _inkOn,
-    Zero       = ZeroOff       | _inkOn,
-    Xor        = XorOff        | _inkOn,
-    Xnor       = XnorOff       | _inkOn,
-    Latch      = LatchOff      | _inkOn,
-    Clock      = ClockOff      | _inkOn,
-    Timer      = TimerOff      | _inkOn,
-    Random     = RandomOff     | _inkOn,
-    Breakpoint = BreakpointOff | _inkOn,
+    NonZeroOn    = NonZero    | _logicOn,
+    ZeroOn       = Zero       | _logicOn,
+    XorOn        = Xor        | _logicOn,
+    XnorOn       = Xnor       | _logicOn,
+    LatchOn      = Latch      | _logicOn,
+    ClockOn      = Clock      | _logicOn,
+    TimerOn      = Timer      | _logicOn,
+    RandomOn     = Random     | _logicOn,
+    BreakpointOn = Breakpoint | _logicOn,
 };
 
 
@@ -206,8 +206,8 @@ class Project
     uint32_t    lastVMemAddr = 0;
     uint64_t    tickNum      = 0;
 
-    LatchInterface vmAddr    = {{}, {}, {}, -1, {}};
-    LatchInterface vmData    = {{}, {}, {}, -1, {}};
+    LatchInterface vmAddr    = {{0,0}, {0,0}, {0,0}, -1, {}};
+    LatchInterface vmData    = {{0,0}, {0,0}, {0,0}, -1, {}};
     std::string    assembly  = {};
     int32_t        height    = 0;
     int32_t        width     = 0;
@@ -314,7 +314,7 @@ class Project
 
   private:
     [[gnu::hot]]
-    ND bool resolve_state(SimulationResult &res, InkState curInk, bool lastActive, int lastInputs);
+    ND bool resolve_state(SimulationResult &res, InkState curInk, int lastInputs, bool lastActive);
 
     [[gnu::hot]]
     bool tryEmit(int32_t gid);

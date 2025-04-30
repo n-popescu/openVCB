@@ -30,7 +30,7 @@ void Project::toggleLatch(glm::ivec2 const pos)
 
 void Project::toggleLatch(int const gid)
 {
-    if (SetOff(stateInks[gid]) != Ink::LatchOff)
+    if (SetOff(stateInks[gid]) != Ink::Latch)
         return;
     states[gid].activeInputs = 1;
     if (states[gid].visited)

@@ -41,7 +41,7 @@ EXPORT_API void openVCB_SetStateMemory(int *data, int size);
 EXPORT_API void openVCB_SetVMemMemory(void *data, int size);
 EXPORT_API void openVCB_SetIndicesMemory(int *data, int size);
 EXPORT_API void openVCB_SetImageMemory(void *data, int width, int height);
-EXPORT_API void openVCB_SetDecoMemory(int *__restrict indices, int indLen, int const *__restrict col, int colLen);
+EXPORT_API void openVCB_SetDecoMemory(int *indices, int indLen, int const *col, int colLen);
 EXPORT_API void openVCB_GetGroupStats(int *numGroups, int *numConnections) noexcept;
 EXPORT_API void openVCB_SetInterface(openVCB::LatchInterface const *__restrict addr, openVCB::LatchInterface const *__restrict data);
 EXPORT_API void openVCB_FreeErrorArray(char **arr, size_t numStrings) noexcept;
@@ -363,8 +363,8 @@ openVCB_SetImageMemory(void *data, int width, int height)
 }
 
 EXPORT_API void
-openVCB_SetDecoMemory(int       *__restrict indices, UU int indLen,
-                      int const *__restrict col,     UU int colLen)
+openVCB_SetDecoMemory(int       *indices, UU int indLen,
+                      int const *col,     UU int colLen)
 {
     std::lock_guard lock(simLock);
 
@@ -380,7 +380,7 @@ openVCB_SetDecoMemory(int       *__restrict indices, UU int indLen,
                 continue;
 
             auto ink = SetOff(proj->image[idx].ink);
-            if (util::eq_any(ink, Ink::LatchOff, Ink::LedOff)) {
+            if (util::eq_any(ink, Ink::Latch, Ink::Led)) {
                 queue.emplace(x, y, proj->indexImage[idx]);
                 visited[idx] = true;
             }
